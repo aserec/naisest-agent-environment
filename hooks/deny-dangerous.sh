@@ -1,24 +1,52 @@
-#!/usr/bin/env bash
-# Shared guard. Reads a hook payload (JSON) on stdin; blocks if the shell command
-# matches a line of dangerous-patterns.txt. Exit 2 = block (Claude/Codex/Devin/Grok).
-# Arg "cursor": print Cursor's deny JSON instead. Fails open on any internal error.
-patterns="${GUARD_PATTERNS:-$HOME/.agents/hooks/dangerous-patterns.txt}"
-payload=$(cat)
-[ -r "$patterns" ] || exit 0
-command -v jq >/dev/null 2>&1 || exit 0
-cmd=$(printf '%s' "$payload" | jq -r '.tool_input.command // .toolInput.command // .command // empty' 2>/dev/null) || exit 0
-[ -n "$cmd" ] || exit 0
+#!/bin/bash
+# Global agent command guard.
+# Blocks catastrophic shell commands before agents run them.
+# Denylist: ~/.agents/hooks/dangerous-patterns.txt (one ERE regex per line).
+#
+# Used by:
+#   Claude Code  ~/.claude/settings.json  PreToolUse (matcher Bash)
+#   Codex        ~/.codex/hooks.json      PreToolUse (matcher Bash)
+#   Cursor       ~/.cursor/hooks.json     beforeShellExecution (arg: cursor)
+#
+# stdin:  hook JSON. Claude/Codex put the command at .tool_input.command,
+#         Cursor at .command.
+# Block:  default mode -> exit 2 + reason on stderr (Claude/Codex contract).
+#         "cursor" mode -> {"permission":"deny",...} JSON on stdout, exit 0.
+# Allow:  default mode -> exit 0, silent. cursor mode -> {"permission":"allow"}.
 
-while IFS= read -r pat || [ -n "$pat" ]; do
-  case "$pat" in ''|'#'*) continue ;; esac
-  if printf '%s\n' "$cmd" | grep -Eq -- "$pat" 2>/dev/null; then
-    reason="Blocked by global agent guardrail (~/.agents/hooks/dangerous-patterns.txt): $pat"
-    if [ "${1:-}" = cursor ]; then
-      jq -nc --arg r "$reason" '{permission:"deny",user_message:$r,agent_message:$r}'
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+PATTERNS_FILE="$HOME/.agents/hooks/dangerous-patterns.txt"
+MODE="${1:-exitcode}"
+
+allow() {
+  [ "$MODE" = "cursor" ] && printf '{"permission":"allow"}\n'
+  exit 0
+}
+
+# Without jq we cannot inspect the command: fail open rather than break agents.
+command -v jq >/dev/null 2>&1 || allow
+
+INPUT=$(cat)
+# .tool_input = Claude/Codex, .toolInput = Grok CLI (Claude-compat mode), .command = Cursor
+CMD=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // .toolInput.command // .command // empty' 2>/dev/null)
+
+[ -z "$CMD" ] && allow
+[ -f "$PATTERNS_FILE" ] || allow
+
+while IFS= read -r pattern; do
+  case "$pattern" in ''|\#*) continue ;; esac
+  if printf '%s\n' "$CMD" | grep -qE -- "$pattern" 2>/dev/null; then
+    if [ "$MODE" = "cursor" ]; then
+      jq -cn --arg p "$pattern" '{
+        permission: "deny",
+        user_message: "Command guard blocked a dangerous command.",
+        agent_message: ("This command was blocked by the global dangerous-command guard (~/.agents/hooks/dangerous-patterns.txt). Matched pattern: " + $p + ". Do not retry it or try to work around the guard; explain the block to the user instead.")
+      }'
       exit 0
     fi
-    echo "$reason" >&2
+    echo "Blocked by the global dangerous-command guard (~/.agents/hooks/dangerous-patterns.txt). Matched pattern: $pattern. Do not retry it or try to work around the guard; explain the block to the user instead." >&2
     exit 2
   fi
-done < "$patterns"
-exit 0
+done < "$PATTERNS_FILE"
+
+allow
