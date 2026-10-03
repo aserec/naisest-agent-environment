@@ -1,8 +1,7 @@
 #!/bin/bash
 # Warns the main session or a subagent when its own context passes 120K and again at 150K.
-# Registered on UserPromptSubmit and PostToolUse in .claude/settings.json.
+# Registered on UserPromptSubmit and PostToolUse in the project's .claude/settings.json.
 # Context = the last assistant turn's input + cache_read + cache_creation tokens.
-# Rule: engineering-docs/05-development/claude-code-workflow.md#context-budget
 SOFT=120000
 HARD=150000
 STATE_DIR="${CONTEXT_BUDGET_STATE_DIR:-${TMPDIR:-/tmp}/claude-context-budget}"
@@ -32,10 +31,10 @@ k=$((tokens / 1000))
 
 if [ "$tokens" -ge "$HARD" ] && [ "$level" != hard ]; then
   echo hard >"$marker"
-  msg="Context is ${k}K, over the 150K ceiling. Hand off now: finish only the step in progress, write a small handoff file, and relay the rest to a fresh subagent (claude-code-workflow.md#context-budget)."
+  msg="Context is ${k}K, over the 150K ceiling. Hand off now: finish only the step in progress, write a handoff file (a short file with the goal, the decisions made and the remaining steps), and relay the rest to a fresh subagent that reads it."
 elif [ "$tokens" -ge "$SOFT" ] && [ -z "$level" ]; then
   echo soft >"$marker"
-  msg="Context is ${k}K, past the 120K refresh point. At the next safe checkpoint, write a small handoff file and relay the rest to a fresh subagent (claude-code-workflow.md#context-budget)."
+  msg="Context is ${k}K, past the 120K refresh point. At the next safe checkpoint, write a handoff file (a short file with the goal, the decisions made and the remaining steps) and relay the rest to a fresh subagent that reads it."
 else
   exit 0
 fi

@@ -2,9 +2,9 @@
 # Test harness for deny-dangerous.sh.
 # Runs dangerous + safe commands through both payload shapes
 # (Claude/Codex exit-code mode and Cursor JSON mode).
-# Usage: ~/.agents/hooks/test-guard.sh
+# Usage: hooks/test-guard.sh  (tests the deny-dangerous.sh next to it; override with GUARD=)
 
-GUARD="$HOME/.agents/hooks/deny-dangerous.sh"
+GUARD="${GUARD:-$(cd "$(dirname "$0")" && pwd)/deny-dangerous.sh}"
 pass=0
 fail=0
 

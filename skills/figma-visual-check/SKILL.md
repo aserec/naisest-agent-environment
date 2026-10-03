@@ -21,7 +21,7 @@ The check is done when `scripts/diff.py` exits 0 for every node you built, and y
 
 ### 1. Pick one node per rendered state
 
-Take the node id from the prompt, from `get_design_context`, or from `design/FIGMA-NODES.md`. Use the node of one variant, such as `Hierarchy=Primary, Size=md, State=Default`, not the whole component set. The rendered UI must show that same variant, state and text.
+Take the node id from the prompt, from `get_design_context`, or from the project's node map, if it keeps one. Use the node of one variant, such as `Hierarchy=Primary, Size=md, State=Default`, not the whole component set. The rendered UI must show that same variant, state and text.
 
 Done when each state you changed has one variant node id and one URL that renders it.
 

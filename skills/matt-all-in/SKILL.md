@@ -18,7 +18,7 @@ metadata:
 
 Run this after a `/grill-with-docs` session, when the user wants the rest of the chain in one run: spec, tickets, then implementation. The user's invocation of this skill is their written approval for every gate in that chain. At each approval, quiz or seam check, take the **recommended** option, record it in the spec, and keep going.
 
-The run is done when every ticket of the feature is resolved with a commit, `pnpm precommit` is green, the confirmed review findings are fixed, and the report is delivered.
+The run is done when every ticket of the feature is resolved with a commit, the project's precommit or check command (as `AGENTS.md` or `package.json` names it) is green, the confirmed review findings are fixed, and the report is delivered.
 
 `to-spec`, `to-tickets` and `implement` are user-invoked-only, so the Skill tool refuses them. Read each one's SKILL.md from the project skill folder and follow it in place.
 
@@ -55,11 +55,11 @@ Done when every ticket file exists, each carries both lines, and no ticket is bl
 
 ### 4. Implement ticket by ticket
 
-Read the SKILL.md of `implement` and follow it through `superpowers:subagent-driven-development`, with this repo's overrides from the AGENTS.md paragraph on plans: no worktree, no check-in between tickets. Dispatch **one fresh subagent per ticket**, working the frontier in number order. Brief each implementer to:
+Read the SKILL.md of `implement` and follow it through `superpowers:subagent-driven-development`, with the project's overrides from its `AGENTS.md`, if any; by default no worktree, no check-in between tickets. Dispatch **one fresh subagent per ticket**, working the frontier in number order. Brief each implementer to:
 
-- invoke `vercel-react-best-practices` before its first edit, and use `/tdd` at the spec's seams;
-- follow the AGENTS.md row on UI, including a design-deviations entry for any UI with no Figma board;
-- run `pnpm test` and `pnpm run build` until both pass, then commit per the AGENTS.md row on git;
+- invoke the stack's best-practice skill (such as `vercel-react-best-practices` for React) before its first edit, and use `/tdd` at the spec's seams;
+- follow the project's UI rules in `AGENTS.md`, if it has them;
+- run the project's test and build commands until both pass, then commit per the project's git rules;
 - set the ticket's `Status:` to resolved and append a short note under `## Comments`;
 - report its commit SHA, or `HANDOFF: <path>` at the context budget.
 
@@ -69,11 +69,11 @@ Done when every ticket file reads resolved and names its commit.
 
 ### 5. Verify and report
 
-Run `pnpm precommit` once. Run `/code-review` over the branch against master and fix what it confirms with a fresh subagent. Do a browser check in mock mode per the AGENTS.md row on browsers.
+Run the project's precommit or check command once. Run `/code-review` over the branch against the default branch and fix what it confirms with a fresh subagent. Do a browser check when the project defines one.
 
 Report to the user: each ticket with its commit SHA, the test and precommit output, the review findings and their fixes, anything skipped, and each subagent's tokens, tool uses and duration from its completion notice.
 
-Done when `pnpm precommit` exits 0, every confirmed finding is fixed, and the report is delivered.
+Done when the precommit or check command exits 0, every confirmed finding is fixed, and the report is delivered.
 
 ## Examples
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Test harness for context-budget.sh.
-# Usage: .agents/hooks/test-context-budget.sh
+# Usage: hooks/test-context-budget.sh
 cd "$(dirname "$0")" || exit 1
 HOOK="$PWD/context-budget.sh"
 TMP=$(mktemp -d)

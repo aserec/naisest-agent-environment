@@ -1,7 +1,8 @@
 #!/bin/bash
 # Global agent command guard.
 # Blocks catastrophic shell commands before agents run them.
-# Denylist: ~/.agents/hooks/dangerous-patterns.txt (one ERE regex per line).
+# Denylist: dangerous-patterns.txt next to this script (one ERE regex per line).
+# Override with DANGEROUS_PATTERNS_FILE.
 #
 # Used by:
 #   Claude Code  ~/.claude/settings.json  PreToolUse (matcher Bash)
@@ -15,7 +16,7 @@
 # Allow:  default mode -> exit 0, silent. cursor mode -> {"permission":"allow"}.
 
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
-PATTERNS_FILE="$HOME/.agents/hooks/dangerous-patterns.txt"
+PATTERNS_FILE="${DANGEROUS_PATTERNS_FILE:-$(cd "$(dirname "$0")" && pwd)/dangerous-patterns.txt}"
 MODE="${1:-exitcode}"
 
 allow() {
@@ -37,14 +38,14 @@ while IFS= read -r pattern; do
   case "$pattern" in ''|\#*) continue ;; esac
   if printf '%s\n' "$CMD" | grep -qE -- "$pattern" 2>/dev/null; then
     if [ "$MODE" = "cursor" ]; then
-      jq -cn --arg p "$pattern" '{
+      jq -cn --arg p "$pattern" --arg f "$PATTERNS_FILE" '{
         permission: "deny",
         user_message: "Command guard blocked a dangerous command.",
-        agent_message: ("This command was blocked by the global dangerous-command guard (~/.agents/hooks/dangerous-patterns.txt). Matched pattern: " + $p + ". Do not retry it or try to work around the guard; explain the block to the user instead.")
+        agent_message: ("This command was blocked by the global dangerous-command guard (" + $f + "). Matched pattern: " + $p + ". Do not retry it or try to work around the guard; explain the block to the user instead.")
       }'
       exit 0
     fi
-    echo "Blocked by the global dangerous-command guard (~/.agents/hooks/dangerous-patterns.txt). Matched pattern: $pattern. Do not retry it or try to work around the guard; explain the block to the user instead." >&2
+    echo "Blocked by the global dangerous-command guard ($PATTERNS_FILE). Matched pattern: $pattern. Do not retry it or try to work around the guard; explain the block to the user instead." >&2
     exit 2
   fi
 done < "$PATTERNS_FILE"
