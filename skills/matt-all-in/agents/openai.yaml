@@ -1,0 +1,5 @@
+interface:
+  display_name: "Matt All In"
+  short_description: "Grilled plan to spec, tickets and code"
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,24 @@
+# Catastrophic shell commands. One POSIX ERE (grep -E) per line; # starts a comment.
+# Use [[:space:]], never \s. Run ~/.agents/hooks/test-guard.sh after any change.
+
+# rm on /, home, /Users, or a .git directory
+(^|[;&|([:space:]])rm[[:space:]]+(-[^[:space:]]*[[:space:]]+)*["']?(/|/\*|~|~/|~/\*|\$HOME|\$HOME/|\$HOME/\*|\$\{HOME\}/?|/Users/?|/Users/[^/[:space:]"']+/?|(\./)?\.git/?)["']?([[:space:]]|$|[;&|)])
+(^|[;&|([:space:]])rm[[:space:]].*--no-preserve-root
+# find ... -delete from / or home
+(^|[;&|([:space:]])find[[:space:]]+["']?(/|~|\$HOME)/?["']?[[:space:]].*-delete
+# disk wipes
+(^|[;&|([:space:]])mkfs(\.[a-z0-9]+)?[[:space:]]
+(^|[;&|([:space:]])dd[[:space:]].*of=/dev/(r?disk|sd|nvme|hd)
+(^|[;&|([:space:]])diskutil[[:space:]]+(eraseDisk|eraseVolume|zeroDisk|randomDisk|secureErase|partitionDisk)
+# recursive permission/ownership change on / or home
+(^|[;&|([:space:]])(chmod|chown)[[:space:]]+-[^[:space:]]*R[^[:space:]]*[[:space:]]+([^[:space:]]+[[:space:]]+)?["']?(/|~|\$HOME)/?["']?([[:space:]]|$)
+# fork bomb
+:\(\)[[:space:]]*\{[[:space:]]*:[[:space:]]*\|[[:space:]]*:
+# remote history rewrite or repo deletion
+(^|[;&|([:space:]])git[[:space:]]+push([[:space:]]+[^[:space:]]+)*[[:space:]]+(--force|--force-with-lease|-f|--mirror|--delete|-d)([[:space:]=]|$)
+(^|[;&|([:space:]])git[[:space:]]+push([[:space:]]+[^[:space:]]+)*[[:space:]]+\+[^[:space:]]+
+(^|[;&|([:space:]])(gh|glab)[[:space:]]+repo[[:space:]]+delete
+# secret exfiltration
+(^|[;&|([:space:]])(printenv|env|set)[[:space:]]*\|[[:space:]]*(curl|wget|nc|ncat|socat)
+cat[[:space:]][^|]*(\.ssh/|\.aws/credentials|\.netrc|\.npmrc|\.env)[^|]*\|[[:space:]]*(curl|wget|nc|ncat|socat)
+(curl|wget)[[:space:]].*(@|<)[[:space:]]*["']?[^[:space:]]*(\.ssh/id_|\.aws/credentials|\.netrc|\.npmrc|\.env)
