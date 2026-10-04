@@ -32,6 +32,8 @@ Set up agent-config in this project by following .agents/SETUP.md
 
   `graft build --deep` also needs `GRAFT_API_KEY`. If the project has no graft index, do not use graft, or remove `graft` from your copy of the MCP config.
 
+  The index is a local cache. Add `/graft/` to the project's `.gitignore`. The `graft` skill is linked with the others and tells agents to query the index before reading source.
+
 ## Access
 
 The repo is private. Ask its owner for read access. Then pick one way to log in:
