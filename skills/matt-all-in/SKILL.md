@@ -33,7 +33,7 @@ Two rules hold for the whole run:
 
 ### 1. Fix the slug and the sources
 
-Pick the feature slug: reuse the .scratch/<slug>/ directory the grilling wrote to, or the one the user named. Read every decision source in full: the grilling in this conversation, each handoff file in that directory, the glossary in CONTEXT.md, and any new ADR under docs/decisions. When a later decision supersedes an earlier one, the later one wins; note which.
+Pick the feature slug: reuse the .scratch/<slug>/ directory the grilling wrote to, or the one the user named. Read every decision source in full: the grilling in this conversation, each handoff file in that directory, the glossary in GLOSSARY.md, and any new ADR under docs/decisions. When a later decision supersedes an earlier one, the later one wins; note which.
 
 Done when the slug is named and every decision source is read in full.
 
