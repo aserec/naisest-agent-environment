@@ -12,11 +12,11 @@ Open Claude Code (or another agent) in the project folder and paste this prompt:
 Set up agent-config in this project by following .agents/SETUP.md
 (or https://github.com/aserec/agent-config/blob/main/SETUP.md if .agents/ is empty).
 - If .gitmodules already lists .agents, follow "Join an existing project". Otherwise follow "Add to a new project".
-- Ask me before you change anything global: ~/.gitconfig, ~/.claude/settings.json, ~/.agents/.
+- Ask me before you change anything global: ~/.gitconfig, ~/.claude, ~/.codex, ~/.cursor, ~/.agents/ (this includes `install.sh guard`).
 - In existing JSON files, merge entries. Never overwrite them.
 - If the clone fails with an access error, stop and tell me to request access to github.com/aserec/agent-config.
 - Run every check in "Verify" and report each one as passed or failed, with the output of any failure.
-- Tell me which steps need me (MCP approval, /mcp Figma login, /setup-matt-pocock-skills) and stop there.
+- Tell me which steps need me (trusting the project and its hooks, MCP approval, the Figma login, /setup-matt-pocock-skills) and stop there.
 ```
 
 ## Prerequisites
@@ -51,44 +51,46 @@ Or use the SSH URL `git@github.com:aserec/agent-config.git` instead of the HTTPS
    git submodule add https://github.com/aserec/agent-config.git .agents
    ```
 
-2. Link every skill for Claude Code:
+2. Run the installer from the project root. With no arguments it sets up every harness. To set up only some, name them: `claude cursor codex gemini copilot opencode`.
 
    ```sh
-   mkdir -p .claude/skills
-   for d in .agents/skills/*/; do n=$(basename "$d"); ln -sfn "../../.agents/skills/$n" ".claude/skills/$n"; done
+   bash .agents/install.sh
    ```
 
-3. Link the MCP config:
+   It is safe to run again. It merges into config files that already exist, keeps your own entries, and replaces only its own older entries. What it writes is in [What the installer writes](#what-the-installer-writes).
+
+3. Commit what it wrote:
 
    ```sh
-   ln -s .agents/mcp.json .mcp.json
-   ```
-
-4. Add the context-budget hook to `.claude/settings.json`. If the file exists, merge the `hooks` object into it.
-
-   ```json
-   {
-     "hooks": {
-       "UserPromptSubmit": [
-         { "hooks": [{ "type": "command", "command": "f=\"${CLAUDE_PROJECT_DIR:-.}/.agents/hooks/context-budget.sh\"; [ ! -f \"$f\" ] || bash \"$f\"" }] }
-       ],
-       "PostToolUse": [
-         { "hooks": [{ "type": "command", "command": "f=\"${CLAUDE_PROJECT_DIR:-.}/.agents/hooks/context-budget.sh\"; [ ! -f \"$f\" ] || bash \"$f\"" }] }
-       ]
-     }
-   }
-   ```
-
-   The `[ ! -f ]` guard makes the hook do nothing when `.agents/` is not checked out.
-
-5. Codex reads `.agents/skills` directly. It needs no links.
-
-6. Commit:
-
-   ```sh
-   git add .gitmodules .agents .claude/skills .claude/settings.json .mcp.json
+   git add .gitmodules .agents .claude .mcp.json .cursor .codex .gemini .vscode/mcp.json opencode.json
    git commit -m "chore: add agent-config"
    ```
+
+## What the installer writes
+
+The submodule sits at `.agents/`, so `.agents/skills/` is already the skill folder that Codex, Cursor, Gemini CLI, Copilot and OpenCode scan. Only Claude Code needs links. The installer adds the MCP servers and the hook that loads `structured-output` at the start of each session.
+
+| Harness | Skills | MCP servers | `structured-output` at session start |
+| --- | --- | --- | --- |
+| Claude Code | links in `.claude/skills/` | `.mcp.json` link | `SessionStart` in `.claude/settings.json` |
+| Codex | native | `[mcp_servers.*]` in `.codex/config.toml` | `SessionStart` in `.codex/hooks.json` |
+| Cursor (IDE and CLI) | native | `.cursor/mcp.json` link | `sessionStart` in `.cursor/hooks.json` |
+| Gemini CLI | native | `mcpServers` in `.gemini/settings.json` | `SessionStart` in `.gemini/settings.json` |
+| Copilot CLI | native | reads `.mcp.json` | reads `.claude/settings.json` hooks |
+| Copilot in VS Code | native | `.vscode/mcp.json` | reads `.claude/settings.json` hooks when `chat.useClaudeHooks` is on |
+| OpenCode | native | `mcp` in `opencode.json` | `instructions` in `opencode.json` (OpenCode has no shell hooks) |
+
+The context-budget hook runs only in Claude Code. It reads the Claude transcript format. In Copilot it finds no Claude session and does nothing.
+
+When a project already has its own `.mcp.json` or `.cursor/mcp.json` as a regular file, the installer merges the servers into it instead of linking. Rerun the installer after each update so the copies stay current.
+
+Hook commands find the project root through `CLAUDE_PROJECT_DIR`, `CURSOR_PROJECT_DIR` or `GEMINI_PROJECT_DIR`, else `git rev-parse --show-toplevel`. They do nothing when `.agents/` is not checked out.
+
+For any other harness: if it reads `.agents/skills/`, the skills work as they are. If it reads `AGENTS.md`, add this line to the project's `AGENTS.md` to load the reply format:
+
+```text
+Follow .agents/skills/structured-output/SKILL.md for every chat reply.
+```
 
 ## Join an existing project
 
@@ -138,31 +140,26 @@ git -c protocol.file.allow=always submodule update --remote .agents
 /setup-matt-pocock-skills
 ```
 
-## First Claude Code run
+## First run in each harness
 
-1. Start `claude` in the project and trust the folder.
-2. Approve the project MCP servers when it asks.
-3. Run `/mcp`, select `figma` and log in once in the browser.
+- **Claude Code:** start `claude`, trust the folder, approve the project MCP servers, then run `/mcp`, select `figma` and log in once in the browser.
+- **Codex:** trust the project. Codex loads `.codex/config.toml` and `.codex/hooks.json` only in trusted projects. Run `/hooks` and trust the `SessionStart` entry. Codex caps hook context at about 2,500 tokens, so it may cut the end of `structured-output`.
+- **Cursor:** approve the MCP servers in Settings, then log in to `figma`. Leave Settings, Agents, Third-Party Imports off. If it is on, Cursor also runs the Claude hooks and loads the skill twice.
+- **Gemini CLI:** trust the project hooks when Gemini asks. It asks again after each change to the hook entries.
+- **Copilot in VS Code:** turn on `chat.useClaudeHooks` to load the skill at session start.
+- **OpenCode:** nothing more.
 
 ## Global command guard (once per machine)
 
-The guard blocks catastrophic shell commands in every project. Install it:
+The guard blocks catastrophic shell commands in every project. This writes under your home folder: it copies the guard to `~/.agents/hooks/` and adds it to Claude Code, Codex and Cursor, for each of them that has a folder in your home folder.
 
 ```sh
-mkdir -p ~/.agents/hooks
-cp .agents/hooks/deny-dangerous.sh .agents/hooks/dangerous-patterns.txt .agents/hooks/test-guard.sh ~/.agents/hooks/
-chmod +x ~/.agents/hooks/*.sh
+bash .agents/install.sh guard    # ends "failed: 0"
 ```
 
-Merge this entry into `hooks.PreToolUse` in `~/.claude/settings.json`. Keep the entries that are already there:
+In Codex, run `/hooks` and trust the guard entry. For OpenCode, Pi, Hermes, Droid and Devin, see `skills/global-agent-guardrails/SKILL.md`.
 
-```json
-{ "matcher": "Bash", "hooks": [{ "type": "command", "command": "$HOME/.agents/hooks/deny-dangerous.sh" }] }
-```
-
-Other agents (Codex, Cursor and others): see `skills/global-agent-guardrails/SKILL.md`.
-
-Check for drift after each update of `.agents`. If `cmp` prints a difference, run the `cp` line again:
+Check for drift after each update of `.agents`. If `cmp` prints a difference, run the `guard` line again:
 
 ```sh
 cmp .agents/hooks/deny-dangerous.sh ~/.agents/hooks/deny-dangerous.sh && cmp .agents/hooks/dangerous-patterns.txt ~/.agents/hooks/dangerous-patterns.txt
@@ -172,7 +169,8 @@ cmp .agents/hooks/deny-dangerous.sh ~/.agents/hooks/deny-dangerous.sh && cmp .ag
 
 ```sh
 git submodule status .agents                  # no leading "-"
-find .claude/skills .mcp.json -maxdepth 1 -type l ! -exec test -e {} \; -print   # no output
+find .claude/skills .mcp.json .cursor/mcp.json -maxdepth 1 -type l ! -exec test -e {} \; -print   # no output
+bash .agents/test-install.sh                  # ends "failed=0"
 bash .agents/hooks/test-context-budget.sh     # ends "failed=0"
 bash .agents/hooks/test-guard.sh              # ends "failed: 0"
 ~/.agents/hooks/test-guard.sh                 # ends "failed: 0"
@@ -183,8 +181,9 @@ claude mcp list                               # lists figma and graft
 
 ```sh
 git submodule update --remote .agents
-git add .agents
+bash .agents/install.sh
+git add -A .agents .claude .mcp.json .cursor .codex .gemini .vscode/mcp.json opencode.json
 git commit -m "chore: bump agent-config"
 ```
 
-Then run the drift check above.
+The installer links new skills, removes links to skills that are gone, and replaces its older hook entries. Then run the drift check above.
