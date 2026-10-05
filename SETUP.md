@@ -134,11 +134,13 @@ git -c protocol.file.allow=always submodule update --remote .agents
 
 ## Matt Pocock skills
 
-`code-review`, `to-tickets`, `triage`, `domain-modeling`, `tdd`, `ask-matt` and related skills need a one-time setup per project. Run this in Claude Code:
+The skills from [mattpocock/skills](https://github.com/mattpocock/skills) are listed, with the pinned commit, in [`upstream/upstream.json`](upstream/upstream.json). Start with `/ask-matt` for which one to use when. Most need a one-time setup per project. Run this in Claude Code:
 
 ```text
 /setup-matt-pocock-skills
 ```
+
+Projects that used these skills before the `GLOSSARY.md` rename: rename `CONTEXT.md` to `GLOSSARY.md` and `CONTEXT-MAP.md` to `GLOSSARY-MAP.md`.
 
 ## First run in each harness
 

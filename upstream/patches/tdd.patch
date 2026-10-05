@@ -1,0 +1,11 @@
+diff -ruN -x .DS_Store a/skills/tdd/SKILL.md b/skills/tdd/SKILL.md
+--- a/skills/tdd/SKILL.md
++++ b/skills/tdd/SKILL.md
+@@ -1,6 +1,6 @@
+ ---
+ name: tdd
+-description: Test-driven development. Use when the user wants to build features or fix bugs test-first, mentions "red-green-refactor", or wants integration tests.
++description: Test-driven development reference. Use only when the user types /tdd or another skill tells you to use it. For test-first work otherwise, use superpowers:test-driven-development.
+ ---
+ 
+ # Test-Driven Development

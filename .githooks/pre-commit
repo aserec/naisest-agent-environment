@@ -1,0 +1,22 @@
+#!/bin/bash
+# Pre-commit checks for agent-config. Enable once per clone: git config core.hooksPath .githooks
+# Always runs check-skills.sh; runs the slower tests only when their files are staged.
+cd "$(git rev-parse --show-toplevel)" || exit 1
+staged=$(git diff --cached --name-only)
+log=$(mktemp)
+trap 'rm -f "$log"' EXIT
+fail=0
+
+run() { # $1 = label, rest = command
+  local label="$1"; shift
+  if "$@" >"$log" 2>&1; then echo "pre-commit: $label ok"; else echo "pre-commit: $label FAILED"; cat "$log"; fail=1; fi
+}
+touches() { echo "$staged" | grep -qE "$1"; }
+
+run check-skills bash check-skills.sh
+touches '^(install\.sh|test-install\.sh|mcp\.json|skills/|hooks/)' && run test-install bash test-install.sh
+touches '^hooks/(context-budget|test-context-budget)' && run test-context-budget bash hooks/test-context-budget.sh
+touches '^hooks/(deny-dangerous|dangerous-patterns|test-guard)' && run test-guard bash hooks/test-guard.sh
+
+[ "$fail" = 0 ] || echo "pre-commit: fix the failures above, or commit with --no-verify to skip"
+exit "$fail"
