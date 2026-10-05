@@ -1,5 +1,5 @@
 ---
-name: proposed-commit
+name: commit
 description: Commit with a chat-proposed message. Use when asked to commit, reuse that message, or draft one, confirm it, and commit. Not for a message-only ask.
 version: 1.0.0
 metadata:
