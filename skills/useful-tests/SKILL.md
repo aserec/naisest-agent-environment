@@ -1,6 +1,6 @@
 ---
 name: useful-tests
-description: Prove each test fails when one caller-visible behavior breaks. Use when writing tests, reviewing tests, adding coverage, or deciding whether a test is useful.
+description: Proves each test fails when one caller-visible behavior breaks. Use for every code change and every task that writes, edits, or reviews tests.
 version: 1.0.0
 metadata:
   author: Danel Ceresa <dceresa1988@gmail.com>

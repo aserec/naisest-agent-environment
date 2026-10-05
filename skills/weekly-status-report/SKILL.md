@@ -1,6 +1,7 @@
 ---
 name: weekly-status-report
 description: Writes a short weekly status report from last week's commits and memory. Use when asked for a weekly update, status report, or standup summary.
+disable-model-invocation: true
 version: 1.0.0
 metadata:
   author: Danel Ceresa <dceresa1988@gmail.com>

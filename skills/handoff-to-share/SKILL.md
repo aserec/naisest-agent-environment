@@ -1,6 +1,7 @@
 ---
 name: handoff-to-share
 description: Writes a two-part handout another team's agent can apply and its people can read. Use when asking another system or team to build, change, or decide.
+disable-model-invocation: true
 version: 1.0.0
 metadata:
   author: Danel Ceresa <dceresa1988@gmail.com>
