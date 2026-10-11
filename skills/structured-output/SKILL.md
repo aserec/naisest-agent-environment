@@ -1,10 +1,10 @@
 ---
 name: structured-output
 description: Lay out each chat reply under fixed rendered headings and cut AI tells. Use when answering the user or summarizing completed work.
-version: 3.0.0
+version: 3.1.0
 metadata:
   author: Danel Ceresa <dceresa1988@gmail.com>
-  version: 3.0.0
+  version: 3.1.0
   tags:
     - writing
     - replies
@@ -70,9 +70,9 @@ Done when every question is numbered and needs the reader, or the section is abs
 
 ### 6. Restate the ask
 
-Write Request as at most two sentences: what the user asked and what you understood.
+Write Request as one line with no heading: the bold label, then a short title that names the ask. Example: `**💬 Request:** Change the font color`.
 
-Done when Request names the ask in at most two sentences.
+Done when Request is that single line.
 
 ### 7. Summarize in one sentence
 
@@ -85,14 +85,15 @@ Done when Summary is that single sentence.
 Build the reply from markdown headings, which the terminal renders as styled text:
 
 - The first line is the thread title as a level-2 heading with its icon: `## 📌 Thread title`.
-- Each section opens with a level-3 heading: `### ✅ Answer`, `### 🔗 Steps`, `### ❓ Questions`, `### 💬 Request`, `### 📝 Summary`.
+- Each section opens with a level-3 heading: `### ✅ Answer`, `### 🔗 Steps`, `### ❓ Questions`, `### 📝 Summary`.
+- Request is a single bold line, not a heading: `**💬 Request:** Title of the ask`.
 - Under each heading, write plain paragraphs or a numbered list, with one blank line between blocks.
 - Send the headings and their content only, with no text before the title or after Summary.
 - Keep text upright and plain: the headings carry the structure. Bold `**...**` is fine inside a line.
 
 The first example below is the full reply. When Steps or Questions is absent, omit that heading and its content. The second example shows that shorter reply.
 
-Done when the reply opens with the title heading, every section sits under its own heading, Request and Summary close it, and the reply holds no drawn border, bar, rule or `>` prefix.
+Done when the reply opens with the title heading, every section except Request sits under its own heading, Request and Summary close it, and the reply holds no drawn border, bar, rule or `>` prefix.
 
 ## Examples
 
@@ -117,9 +118,7 @@ Input. "Add logout to the account page."
 
 1. Should logout also revoke the identity provider session?
 
-### 💬 Request
-
-You asked for logout on the account page.
+**💬 Request:** Add logout to the account page
 
 ### 📝 Summary
 
@@ -137,9 +136,7 @@ Input. "Rename the Save label to Apply."
 
 The settings form button now reads Apply.
 
-### 💬 Request
-
-You asked to rename Save to Apply.
+**💬 Request:** Rename Save to Apply
 
 ### 📝 Summary
 
