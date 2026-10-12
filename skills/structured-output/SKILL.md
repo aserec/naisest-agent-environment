@@ -143,15 +143,9 @@ The settings form button now reads Apply.
 The settings button label is Apply.
 ```
 
-## Prerequisites
-
-Read [references/unslop-rules.md](references/unslop-rules.md) while rewriting the reply. This skill adds no tools, keys, or services.
-
 ## Limitations
 
 This skill shapes chat replies. File edits, commits, and document rewrites stay with the task that owns them. Apply the same rules to those edits, and keep a file's own format. Steps and Questions are omitted when empty. The reply lists a command the reader must run. It does not run that command.
-
-A terminal renders only text and its styling, so headings are the whole visual layout here. A background panel or a border that stays out of a copy needs a graphical client.
 
 ## Troubleshooting
 

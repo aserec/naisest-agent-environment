@@ -1,0 +1,32 @@
+diff -ruN -x .DS_Store a/skills/triage/AGENT-BRIEF.md b/skills/triage/AGENT-BRIEF.md
+--- a/skills/triage/AGENT-BRIEF.md
++++ b/skills/triage/AGENT-BRIEF.md
+@@ -1,5 +1,11 @@
+ # Writing Agent Briefs
+ 
++## Contents
++
++- Principles: durability, behavior, acceptance criteria, scope
++- Template
++- Examples: bug, enhancement, PR, and a bad brief
++
+ An agent brief is a structured comment posted on a GitHub issue or PR when it moves to `ready-for-agent`. It is the authoritative specification that an AFK agent will work from. The original body and discussion are context: the agent brief is the contract.
+ 
+ The brief states **what the agent should do**, which stretches to both surfaces: for an issue, that's building the change from nothing; for a PR, it's what's left to do *to the existing diff*: finish it, close gaps, address review points. Same principles either way; the PR example below shows the difference.
+diff -ruN -x .DS_Store a/skills/triage/OUT-OF-SCOPE.md b/skills/triage/OUT-OF-SCOPE.md
+--- a/skills/triage/OUT-OF-SCOPE.md
++++ b/skills/triage/OUT-OF-SCOPE.md
+@@ -1,5 +1,13 @@
+ # Out-of-Scope Knowledge Base
+ 
++## Contents
++
++- Directory structure
++- File format: naming the file, writing the reason
++- When to check `.out-of-scope/`
++- When to write to `.out-of-scope/`
++- Updating or removing out-of-scope files
++
+ The `.out-of-scope/` directory in a repo stores persistent records of rejected feature requests. It serves two purposes:
+ 
+ 1. **Institutional memory**: why a feature was rejected, so the reasoning isn't lost when the issue is closed

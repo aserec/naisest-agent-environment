@@ -20,13 +20,18 @@ The work is done when `git status` shows the new commit, or the turn stopped on 
 
 ## Instructions
 
-Run this only after the user asked to commit. A request to draft a message and stop is not this skill.
-
 ### 1. Stage this session's changes first
 
-Before anything else, stage the paths this session changed: every file you or a subagent you dispatched created, edited or deleted in this conversation. Leave every other path unstaged, even one that looks related. Another session or the user may own it and still be working on it. When none of this session's paths is uncommitted, say so and stop with no commit.
+Before anything else, stage the paths this session changed: every file you or a subagent you dispatched created, edited or deleted in this conversation. Name each path:
 
-Done when `git diff --staged --stat` lists only this session's paths, or the reply says none remain.
+```bash
+git add -- <path>...
+git diff --staged --name-only
+```
+
+Never run `git add -A`, `git add .` or `git commit -a`. Leave every other path unstaged, even one that looks related. Another session or the user may own it and still be working on it. When none of this session's paths is uncommitted, say so and stop with no commit.
+
+Done when `git diff --staged --name-only` lists only this session's paths, or the reply says none remain.
 
 ### 2. Take the proposed message
 
@@ -100,6 +105,7 @@ Read the hook or command output.
 
 - A proposed message that fails validation stays as written. Report the error and stop. Do not replace it.
 - A draft from this turn that fails validation gets one corrected draft, then a new `git commit`. Do not amend a commit that failed.
+- When the harness blocks `git commit`, report the message and stop.
 - When a hook edits files after a successful commit, amend only if the user asked to commit, HEAD was created in this turn, and the commit is not pushed. Otherwise leave the hook edits unstaged and say so.
 
 Done when `git status` shows one successful commit, or the reply quotes the error and states that nothing new was committed.

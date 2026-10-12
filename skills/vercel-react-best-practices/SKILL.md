@@ -9,8 +9,6 @@ metadata:
 
 # Vercel React Best Practices
 
-Comprehensive performance optimization guide for React and Next.js applications, maintained by Vercel. Contains 70 rules across 8 categories, prioritized by impact to guide automated refactoring and code generation.
-
 ## When to Apply
 
 Reference these guidelines when:
@@ -34,6 +32,8 @@ Reference these guidelines when:
 | 8 | Advanced Patterns | LOW | `advanced-` |
 
 ## Quick Reference
+
+Rule `<id>` lives at `rules/<id>.md`; read only the rule files you need.
 
 ### 1. Eliminating Waterfalls (CRITICAL)
 
@@ -128,22 +128,3 @@ Reference these guidelines when:
 - `advanced-event-handler-refs` - Store event handlers in refs
 - `advanced-init-once` - Initialize app once per app load
 - `advanced-use-latest` - useLatest for stable callback refs
-
-## How to Use
-
-Read individual rule files for detailed explanations and code examples:
-
-```
-rules/async-parallel.md
-rules/bundle-barrel-imports.md
-```
-
-Each rule file contains:
-- Brief explanation of why it matters
-- Incorrect code example with explanation
-- Correct code example with explanation
-- Additional context and references
-
-## Full Compiled Document
-
-For the complete guide with all rules expanded: `AGENTS.md`

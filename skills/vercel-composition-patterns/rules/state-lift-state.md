@@ -5,6 +5,14 @@ impactDescription: enables state sharing outside component boundaries
 tags: composition, state, context, providers
 ---
 
+## Contents
+
+- Incorrect: state trapped inside component
+- Incorrect: useEffect to sync state up
+- Incorrect: reading state from ref on submit
+- Correct: state lifted to provider
+- Key insight
+
 ## Lift State into Provider Components
 
 Move state management into dedicated provider components. This allows sibling

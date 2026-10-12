@@ -5,6 +5,12 @@ impactDescription: avoids repeated file/network I/O per request
 tags: server, io, performance, next.js, route-handlers, og-image
 ---
 
+## Contents
+
+- Incorrect: reads font file on every request
+- Correct: loads once at module initialization (async and sync fs)
+- Incorrect and correct: config and template read on every call
+
 ## Hoist Static I/O to Module Level
 
 **Impact: HIGH (avoids repeated file/network I/O per request)**

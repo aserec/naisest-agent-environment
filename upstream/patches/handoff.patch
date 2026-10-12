@@ -1,0 +1,33 @@
+diff -ruN -x .DS_Store a/skills/handoff/SKILL.md b/skills/handoff/SKILL.md
+--- a/skills/handoff/SKILL.md
++++ b/skills/handoff/SKILL.md
+@@ -7,7 +7,28 @@
+ 
+ Write a handoff document summarising the current conversation so a fresh agent can continue the work. Save to the temporary directory of the user's OS (`$TMPDIR`, else `/tmp`; `%TEMP%` on Windows) - not the current workspace.
+ 
+-Include a "suggested skills" section in the document, naming which skills the next agent should call the Skill tool for.
++Name the file `handoff-<YYYY-MM-DD>-<slug>.md`, where the slug is a few words on the task.
++
++Use this template. Drop a section only when it would be empty.
++
++```md
++# Handoff: <task>
++
++## Goal
++<What the work is for, in one or two sentences.>
++
++## Current state
++<What is done, what is in progress, what is broken.>
++
++## Next steps
++1. <First thing the next agent should do.>
++
++## References
++- <Path or URL to each spec, plan, ADR, issue, commit, or diff.>
++
++## Suggested skills
++- <skill>: <why the next agent should call the Skill tool for it>
++```
+ 
+ Do not duplicate content already captured in other artifacts (specs, plans, ADRs, issues, commits, diffs). Reference them by path or URL instead.
+ 

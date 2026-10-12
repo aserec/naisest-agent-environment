@@ -1,0 +1,9 @@
+diff -ruN -x .DS_Store a/skills/implement/SKILL.md b/skills/implement/SKILL.md
+--- a/skills/implement/SKILL.md
++++ b/skills/implement/SKILL.md
+@@ -12,4 +12,4 @@
+ 
+ Once done, call the Skill tool with "code-review" to review the work.
+ 
+-Commit your work to the current branch.
++Call the Skill tool with "commit" to commit your work to the current branch.

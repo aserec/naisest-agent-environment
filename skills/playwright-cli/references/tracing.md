@@ -2,6 +2,16 @@
 
 Capture detailed execution traces for debugging and analysis. Traces include DOM snapshots, screenshots, network activity, and console logs.
 
+## Contents
+
+- Basic Usage
+- Trace Output Files
+- What Traces Capture
+- Use Cases
+- Trace vs Video vs Screenshot
+- Best Practices
+- Limitations
+
 ## Basic Usage
 
 ```bash

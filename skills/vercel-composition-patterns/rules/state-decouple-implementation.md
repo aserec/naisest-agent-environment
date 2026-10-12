@@ -5,6 +5,12 @@ impactDescription: enables swapping state implementations without changing UI
 tags: composition, state, architecture
 ---
 
+## Contents
+
+- Incorrect: UI coupled to state implementation
+- Correct: state management isolated in provider
+- Different providers, same UI
+
 ## Decouple State Management from UI
 
 The provider component should be the only place that knows how state is managed.

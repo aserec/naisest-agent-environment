@@ -1,5 +1,12 @@
 # UI Prototype
 
+## Contents
+
+- When this is the right shape
+- Two sub-shapes: strongly prefer sub-shape A
+- Process
+- Anti-patterns
+
 Generate **several radically different UI variations** on a single route, switchable from a floating bottom bar. The user flips between variants in the browser, picks one (or steals bits from each), then throws the rest away.
 
 If the question is about logic/state rather than what something looks like, this is the wrong branch. Use [LOGIC.md](LOGIC.md).

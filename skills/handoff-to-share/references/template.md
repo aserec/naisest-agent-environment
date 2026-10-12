@@ -1,5 +1,11 @@
 # Handout template
 
+## Contents
+
+- Skeleton (Part 1: for people, Part 2: for agents)
+- Style rules
+- Final check
+
 Copy this skeleton. Replace everything in angle brackets. Leave out a Part 2 section only when the change has nothing for it. For example, a change with no new endpoint has no contract section.
 
 ````markdown

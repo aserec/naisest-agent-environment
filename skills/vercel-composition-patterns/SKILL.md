@@ -14,11 +14,6 @@ metadata:
 
 # React Composition Patterns
 
-Composition patterns for building flexible, maintainable React components. Avoid
-boolean prop proliferation by using compound components, lifting state, and
-composing internals. These patterns make codebases easier for both humans and AI
-agents to work with as they scale.
-
 ## When to Apply
 
 Reference these guidelines when:
@@ -39,6 +34,8 @@ Reference these guidelines when:
 | 4        | React 19 APIs           | MEDIUM | `react19-`      |
 
 ## Quick Reference
+
+Rule `<id>` lives at `rules/<id>.md`; read only the rule files you need.
 
 ### 1. Component Architecture (HIGH)
 
@@ -67,23 +64,3 @@ Reference these guidelines when:
 > **⚠️ React 19+ only.** Skip this section if using React 18 or earlier.
 
 - `react19-no-forwardref` - Don't use `forwardRef`; use `use()` instead of `useContext()`
-
-## How to Use
-
-Read individual rule files for detailed explanations and code examples:
-
-```
-rules/architecture-avoid-boolean-props.md
-rules/state-context-interface.md
-```
-
-Each rule file contains:
-
-- Brief explanation of why it matters
-- Incorrect code example with explanation
-- Correct code example with explanation
-- Additional context and references
-
-## Full Compiled Document
-
-For the complete guide with all rules expanded: `AGENTS.md`

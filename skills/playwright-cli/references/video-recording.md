@@ -2,6 +2,14 @@
 
 Capture browser automation sessions as video for debugging, documentation, or verification. Produces WebM (VP8/VP9 codec).
 
+## Contents
+
+- Basic Recording
+- Cursor, Target Highlight and Click Point
+- Best Practices
+- Tracing vs Video
+- Limitations
+
 ## Basic Recording
 
 ```bash

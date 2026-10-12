@@ -30,11 +30,16 @@ Done when that sentence names the outcome and each distinct activation case.
 
 Write the skill in the project directory `.agents/skills`, inside a folder whose name matches `name` in the frontmatter. The file in that folder is `SKILL.md`. For a user-wide skill, use that same `.agents/skills` path under the home directory.
 
-Link that directory when a harness scans a second root. Cursor also reads `.cursor/skills` in the project and under the home directory. Claude Code reads `.claude/skills` in the project and under the home directory. Codex reads `.codex/skills` in the project and under the home directory, and it also reads `.agents/skills`. For any other harness, read its docs and link the same directory into the path it scans. If the repo already links skills from `.agents/skills` into another root, use that same link.
+Cursor, Codex, Gemini CLI, Copilot and OpenCode read `.agents/skills` directly. Claude Code reads `.claude/skills`, so link the folder there with a relative link, from the project root:
 
-Keep one copy of the text. Every scanned path opens that same `SKILL.md`.
+```bash
+ln -s ../../.agents/skills/<name> .claude/skills/<name>
+readlink .claude/skills/<name>
+```
 
-Done when the active harness lists the skill and the opened file is the one under `.agents/skills/`.
+In the agent-config repo itself, the target is `../../skills/<name>`. For a user-wide skill, run the same `ln -s` with `~/.claude/skills/<name>` as the link. For any other harness, read its docs and link the same directory into the path it scans.
+
+Done when `readlink` prints the target at the folder under `.agents/skills/` (or `skills/`), and the active harness lists the skill.
 
 ### 3. Write the description that activates
 
@@ -63,20 +68,6 @@ Run `skillevaluator validate` on the skill directory with `--tiers 1 --external 
 
 Done when the command exits 0, the quality score is 100, and the report lists zero findings.
 
-## Keep a skill when all of these hold
-
-- One directory holds the only copy of the text.
-- The description names the outcome and the cases that activate it.
-- Each step ends with a check the agent can observe.
-- Validate reports score 100 and zero findings.
-
-## Rewrite a skill when any of these hold
-
-- The description is missing, shorter than 50 characters, or written as "I can" or "you can".
-- The body explains a topic and never tells the agent the next action.
-- The text is written for one product when the skill should load in every harness that scans a skill directory.
-- Validate still reports a finding.
-
 ## Examples
 
 ### Description that activates
@@ -94,10 +85,6 @@ description: I can help you create Cursor skills.
 ```
 
 This is first person, names one harness, and lists no activation cases. Rewrite it in third person, name the outcome, and add `Use when` with the cases.
-
-### One directory, linked
-
-When Claude Code is in use, link its skill folder to the project skill folder. Both then open the same `SKILL.md`.
 
 ## Prerequisites
 

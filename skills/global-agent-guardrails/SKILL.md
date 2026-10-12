@@ -25,7 +25,7 @@ ls ~/.agents/hooks/deny-dangerous.sh ~/.agents/hooks/dangerous-patterns.txt
 ~/.agents/hooks/test-guard.sh   # must end "failed: 0"
 ```
 
-If missing, rebuild from the wiring table.
+If missing, run `bash .agents/install.sh guard` from the root of a project that has this repo as `.agents/`. It copies the three hook files to `~/.agents/hooks/`, merges the Claude Code, Codex and Cursor entries below, and runs the test suite. Wire the other agents by hand from the table.
 
 ## Add or tune a pattern
 
@@ -55,10 +55,11 @@ Block only catastrophic commands (irreversible data loss, disk wipes, repo delet
 | Droid (Factory) | `~/.factory/settings.json` | native `commandBlocklist` | hard-block, no approval possible |
 | Devin CLI | `~/.config/devin/config.json` | `PreToolUse` matcher `^exec$` | shared script, exit 2 |
 
-Claude/Codex hook entry; for Devin, replace `Bash` with `^exec$`. Merge into the existing `hooks` object; never overwrite it:
+`install.sh guard` merges the Claude Code, Codex and Cursor entries. For Devin, merge the entry into the existing config with jq (safe to re-run):
 
-```json
-{"hooks": {"PreToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": "/ABSOLUTE/HOME/.agents/hooks/deny-dangerous.sh"}]}]}}
+```bash
+f=~/.config/devin/config.json
+jq --arg c "$HOME/.agents/hooks/deny-dangerous.sh" '.hooks.PreToolUse = [(.hooks.PreToolUse // [])[] | select(any(.hooks[]?; .command == $c) | not)] + [{matcher: "^exec$", hooks: [{type: "command", command: $c}]}]' "$f" >"$f.tmp" && mv "$f.tmp" "$f"
 ```
 
 Cursor entry (payload has `.command`, so pass the `cursor` arg):
@@ -83,6 +84,11 @@ Use absolute paths in configs (`~` expansion is inconsistent across agents).
 
 ## E2E verification
 
-Test each installed adapter with a harmless blocked-command probe in a disposable, non-git directory. Confirm that the guard blocks the probe, and use the test suite to check pattern behavior and adapter compatibility.
+Probe the installed guard directly. The guard only reads the JSON, so the command never runs:
 
-Direct script tests should use the installed guard script and verify that a known blocked command returns exit code 2.
+```bash
+echo '{"tool_input":{"command":"rm -rf /"}}' | ~/.agents/hooks/deny-dangerous.sh; echo "exit=$?"   # expect "Blocked by ..." on stderr, exit=2
+echo '{"command":"rm -rf /"}' | ~/.agents/hooks/deny-dangerous.sh cursor                         # expect {"permission":"deny",...}, exit 0
+```
+
+For each adapter, ask that agent to run `git push --force` from `mktemp -d` (a non-git directory, so the push fails harmlessly if the guard misses) and confirm the guard blocks it.

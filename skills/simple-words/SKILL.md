@@ -119,10 +119,6 @@ Input. A draft reply says: "The scaffolding will reconcile the divergent states.
 Result. The reply says: "The starter code will merge the two different states."
 ```
 
-## Prerequisites
-
-A git repo for the Review branch. No extra tools or keys.
-
 ## Limitations
 
 The word list is a guide, not a full dictionary. Judge words that are not on it with the test in Purpose. This skill does not change names that other systems read until the user approves a breaking rename.

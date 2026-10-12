@@ -2,6 +2,18 @@
 
 Run multiple isolated browser sessions concurrently with state persistence.
 
+## Contents
+
+- Named Browser Sessions
+- Browser Session Isolation Properties
+- Browser Session Commands
+- Environment Variable
+- Common Patterns
+- Attaching to a Running Browser
+- Default Browser Session
+- Browser Session Configuration
+- Best Practices
+
 ## Named Browser Sessions
 
 Use `-s` flag to isolate browser contexts:

@@ -1,5 +1,17 @@
 # React Best Practices
 
+## Contents
+
+- Structure
+- Getting Started
+- Creating a New Rule
+- Rule File Structure
+- File Naming Convention
+- Impact Levels
+- Scripts
+- Contributing
+- Acknowledgments
+
 A structured repository for creating and maintaining React Best Practices optimized for agents and LLMs.
 
 ## Structure

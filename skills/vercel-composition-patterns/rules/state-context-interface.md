@@ -5,6 +5,15 @@ impactDescription: enables dependency-injectable state across use-cases
 tags: composition, context, state, typescript, dependency-injection
 ---
 
+## Contents
+
+- Core principle
+- Incorrect: UI coupled to a specific state implementation
+- Correct: generic interface for dependency injection
+- UI consumes the interface; different providers implement it
+- Same composed UI with both providers
+- Custom UI outside the component reaching state and actions
+
 ## Define Generic Context Interfaces for Dependency Injection
 
 Define a **generic interface** for your component context with three parts:

@@ -5,6 +5,12 @@ impactDescription: enables flexible composition without prop drilling
 tags: composition, compound-components, architecture
 ---
 
+## Contents
+
+- Incorrect: monolithic component with render props
+- Correct: compound components with shared context
+- Usage
+
 ## Use Compound Components
 
 Structure complex components as compound components with a shared context. Each

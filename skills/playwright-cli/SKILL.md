@@ -6,6 +6,8 @@ allowed-tools: Bash(pnpm exec playwright-cli:*) Bash(playwright-cli:*)
 
 # Browser Automation with playwright-cli
 
+Examples call bare `playwright-cli`. When it is not on PATH, prefix each command with `pnpm exec` (e.g. `pnpm exec playwright-cli open`); a project that lists `@playwright/cli` as a devDependency installs it with `pnpm install`.
+
 ## Quick start
 
 ```bash
@@ -394,10 +396,6 @@ playwright-cli close-all
 # Forcefully kill all browser processes
 playwright-cli kill-all
 ```
-
-## Installation
-
-In this repo `@playwright/cli` is a root devDependency, installed by `pnpm install`. Run every command below as `pnpm exec playwright-cli <command>` (e.g. `pnpm exec playwright-cli open`).
 
 ## Example: Form submission
 
