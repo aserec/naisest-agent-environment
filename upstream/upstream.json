@@ -2,7 +2,7 @@
   "sources": {
     "mattpocock/skills": {
       "repo": "https://github.com/mattpocock/skills",
-      "ref": "4588b32ecab9ecc9fc8cc6b6c5e7d675b6004b0d",
+      "ref": "6fd947921b935b7e1e69293a200400f0fdd5c15f",
       "skills": {
         "ask-matt": "skills/engineering/ask-matt",
         "code-review": "skills/engineering/code-review",
