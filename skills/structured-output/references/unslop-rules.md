@@ -6,6 +6,10 @@ After the numbered rules, ask what still makes the reply read as generated. Dele
 
 Write the reply in whole sentences. Rule 33's short-line exception does not apply to it.
 
+## Word choice
+
+Pick every word with the simple-words skill and its list at [../../simple-words/references/word-swaps.md](../../simple-words/references/word-swaps.md). That list covers AI vocabulary, fancy substitutes for "is", filler phrases, abstract stand-in nouns and plain words. Use one name for one thing, and repeat it.
+
 ## Content
 
 3. **Trailing -ing phrases.** Delete a phrase such as "highlighting", "ensuring", "reflecting", "showcasing", or "fostering" when it adds no source. If a real source is named, keep the source and cut the -ing frame.
@@ -14,15 +18,9 @@ Write the reply in whole sentences. Rule 33's short-line exception does not appl
 
 ## Language
 
-7. **AI vocabulary.** Replace these words with plain ones. Additionally, crucial, delve, enduring, enhance, fostering, garner, interplay, intricate, landscape when it is abstract, pivotal, showcase, tapestry when it is abstract, testament, underscore, vibrant.
-
-8. **Fancy substitutes for "is".** Replace "serves as", "stands as", "boasts", and "features" with "is" or "has".
-
 9. **Paired contrast.** When a sentence says "not just X, but Y", state Y and delete the contrast.
 
 10. **Forced groups of three.** Use the number of items the facts support. Do not pad or cut a list to three.
-
-11. **Synonym cycling.** If one paragraph uses several names for the same thing, pick one name and repeat it.
 
 12. **False ranges.** When "from X to Y" does not sit on a real scale, list the topics instead.
 
@@ -38,8 +36,6 @@ Write the reply in whole sentences. Rule 33's short-line exception does not appl
 
 17. **Heading case.** Use sentence case for headings.
 
-18. **Decorative emojis.** Remove emojis from headings and bullets.
-
 19. **Curly quotes.** Replace curly quotes with straight quotes.
 
 ## Communication artifacts
@@ -50,15 +46,9 @@ Write the reply in whole sentences. Rule 33's short-line exception does not appl
 
 ## Filler
 
-23. **Filler phrases.** "In order to" becomes "To". "Due to the fact that" becomes "Because". Delete "It is important to note that".
-
 24. **Stacked hedges.** A stack such as "could potentially possibly" becomes "may", or it becomes a direct statement when the fact is known.
 
 25. **Empty closings.** Delete a closing that states no plan and no fact. Summary must state what was done.
-
-## Jargon
-
-26. **Abstract stand-in nouns.** Replace these with a concrete word. Substrate, wedge, vector, locus, vantage, nexus, primitive used as a noun, harness used as a metaphor, surface in "API surface", bedrock, scaffolding used as a metaphor, modality, paradigm, gold-plating, ratchet used as a metaphor, evacuate used for moving code, endgame, north star, flywheel.
 
 ## Plain speech
 
@@ -70,8 +60,6 @@ Write the reply in whole sentences. Rule 33's short-line exception does not appl
 
 30. **Adverbs on a weak verb.** Cut the adverb, or use a stronger verb. When you have a measurement, write the number.
 
-31. **Plain words.** "Utilize" becomes "use". "Leverage" becomes "use". "Facilitate" becomes "help". "Numerous" becomes "many". "In the event that" becomes "if".
-
-32. **Mannered prose.** Replace a metaphor, an aphorism, or a personified object with the literal phrase. Rule 26 covers the abstract nouns.
+32. **Mannered prose.** Replace a metaphor, an aphorism, or a personified object with the literal phrase. Word choice covers the abstract nouns.
 
 33. **Dropped words.** Restore the articles and verbs. Spell out an arrow or an abbreviation the reader would otherwise have to decode. In the reply, do this even when another skill asks for fragments.

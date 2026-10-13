@@ -7,8 +7,10 @@ skill="$(cd "$(dirname "$0")/.." && pwd)/skills/structured-output"
 [ -f "$skill/SKILL.md" ] || exit 0
 text=$(
   echo "Follow this skill for every chat reply in this session. Its references/ folder is at $skill/references."
+  echo "Examples, limitations and troubleshooting are in $skill/SKILL.md. Read them when a check fails."
   echo
-  cat "$skill/SKILL.md"
+  # Only the rules load every session; the sections from Examples on stay in the file.
+  sed '/^## Examples$/,$d' "$skill/SKILL.md"
   echo
   cat "$skill/references/unslop-rules.md"
 )
