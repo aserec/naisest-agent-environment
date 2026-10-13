@@ -1,0 +1,23 @@
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-4: 16px;
+  --radius: 6px;
+  --color-text: #1a1a1a;
+  --color-muted: #5f6368;
+  --color-primary: #2457d6;
+  --color-border: #d0d4da;
+  --color-surface: #ffffff;
+  font-family: system-ui, sans-serif;
+  color: var(--color-text);
+}
+
+body { margin: 0; padding: var(--space-4); }
+.page-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+.header-actions { display: flex; align-items: center; gap: var(--space-2); color: var(--color-muted); }
+.cards { display: flex; gap: var(--space-4); margin-block: var(--space-4); }
+.card { border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--space-4); }
+
+.btn { font: inherit; padding: var(--space-1) var(--space-4); border-radius: var(--radius); cursor: pointer; }
+.btn-primary { background: var(--color-primary); color: #fff; border: 1px solid var(--color-primary); }
+.btn-secondary { background: var(--color-surface); color: var(--color-primary); border: 1px solid var(--color-border); }
