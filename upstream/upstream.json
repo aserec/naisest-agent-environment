@@ -32,6 +32,13 @@
         "wizard": "skills/engineering/wizard",
         "writing-for-agents": "skills/productivity/writing-for-agents"
       }
+    },
+    "dmmulroy/anti-slop": {
+      "repo": "https://github.com/dmmulroy/anti-slop",
+      "ref": "c44ef22ca116d0ba62a3ff663a0bd13a3f3fa40b",
+      "skills": {
+        "install-anti-slop": "skills/install-anti-slop"
+      }
     }
   }
 }
