@@ -39,6 +39,13 @@
       "skills": {
         "install-anti-slop": "skills/install-anti-slop"
       }
+    },
+    "robonuggets/doctor-plus": {
+      "repo": "https://github.com/robonuggets/doctor-plus",
+      "ref": "856d60cc00280eca9da917bfe68ac6152601ce92",
+      "skills": {
+        "doctor-plus": ".claude/skills/doctor-plus"
+      }
     }
   }
 }
