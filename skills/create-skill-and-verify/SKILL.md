@@ -28,7 +28,7 @@ Done when that sentence names the outcome and each distinct activation case.
 
 ### 2. Place one directory
 
-Write the skill in the project directory `.agents/skills`, inside a folder whose name matches `name` in the frontmatter. The file in that folder is `SKILL.md`. For a user-wide skill, use that same `.agents/skills` path under the home directory.
+Write the skill in the project directory `.agents/skills`, inside a folder whose name matches `name` in the frontmatter. The file in that folder is `SKILL.md`. For a user-wide skill, use that same `.agents/skills` path under the home directory. A folder with the same name as a skill in the agent-config copy is replaced the next time that copy is synced. Use a different name for a skill that belongs only to this project.
 
 Cursor, Codex, Gemini CLI, Copilot and OpenCode read `.agents/skills` directly. Claude Code reads `.claude/skills`, so link the folder there with a relative link, from the project root:
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Wires this agent-config submodule into the project that contains it, for each harness.
+# Wires the agent-config copy at .agents/ into the project that contains it, for each harness.
 # Usage, from the project root:
 #   bash .agents/install.sh            # every harness
 #   bash .agents/install.sh cursor codex   # some: claude cursor codex gemini copilot opencode
@@ -65,11 +65,20 @@ claude_settings() { # Also read by Copilot CLI, and by VS Code with chat.useClau
   claude_hook .claude/settings.json PostToolUse context-budget.sh
 }
 
-cursor() { # Skills: reads .agents/skills natively.
+cursor() { # Skills: reads .agents/skills natively. Plugins: workspaceOpen loads .agents/plugins when that folder has any.
   link_or_merge_mcp .cursor/mcp.json
   merge .cursor/hooks.json '.version //= 1
     | .hooks.sessionStart = [(.hooks.sessionStart // [])[] | select((.command // "") | contains($s) | not)] + [{command: $c}]' \
     --arg s "$rel/hooks/load-structured-output.sh" --arg c "$(hookcmd load-structured-output.sh cursor)"
+  if [ -n "$(find "$here/plugins" -mindepth 1 -maxdepth 1 -type d -print -quit 2>/dev/null)" ]; then
+    merge .cursor/hooks.json '.version //= 1
+      | .hooks.workspaceOpen = [(.hooks.workspaceOpen // [])[] | select((.command // "") | contains($s) | not)] + [{command: $c}]' \
+      --arg s "$rel/hooks/load-plugins.sh" --arg c "$(hookcmd load-plugins.sh)"
+  else
+    merge .cursor/hooks.json '.hooks.workspaceOpen = [(.hooks.workspaceOpen // [])[] | select((.command // "") | contains($s) | not)]
+      | if (.hooks.workspaceOpen | length) == 0 then del(.hooks.workspaceOpen) else . end' \
+      --arg s "$rel/hooks/load-plugins.sh"
+  fi
 }
 
 codex() { # Skills: reads .agents/skills natively. Config and hooks load only in trusted projects.

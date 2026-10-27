@@ -32,7 +32,7 @@ check "one context-budget per event" jq -e '(.hooks.UserPromptSubmit | length) =
 check "codex servers written once"   test "$(grep -c '^\[mcp_servers\.' .codex/config.toml)" -eq 2
 check "codex figma url"              grep -q '^url = "https://mcp.figma.com/mcp"' .codex/config.toml
 check "codex one loader"             jq -e '.hooks.SessionStart | length == 1' .codex/hooks.json
-check "cursor one loader"            jq -e '.version == 1 and (.hooks.sessionStart | length == 1)' .cursor/hooks.json
+check "cursor one loader"            jq -e '.version == 1 and (.hooks.sessionStart | length == 1) and (.hooks.workspaceOpen // [] | length == 0)' .cursor/hooks.json
 check "gemini http uses httpUrl"     jq -e '.mcpServers.figma.httpUrl and (.hooks.SessionStart | length == 1)' .gemini/settings.json
 check "vscode servers key"           jq -e '.servers.figma.type == "http" and .servers.graft.type == "stdio"' .vscode/mcp.json
 check "opencode mcp and instructions" jq -e '.mcp.graft.command == ["graft","mcp"] and (.instructions | length == 2)' opencode.json
@@ -42,6 +42,16 @@ cmd=$(jq -r '.hooks.SessionStart[].hooks[] | select(.command | contains("load-st
 check "claude loader output" sh -c "$cmd | jq -e '.hookSpecificOutput.additionalContext | contains(\"Structured output\")'"
 cmd=$(jq -r '.hooks.sessionStart[0].command' .cursor/hooks.json)
 check "cursor loader output" sh -c "cd /tmp && CURSOR_PROJECT_DIR='$TMP' sh -c '$cmd' | jq -e '.additional_context | length > 0'"
+
+mkdir -p .agents/plugins/demo/.cursor-plugin
+echo '{}' >.agents/plugins/demo/.cursor-plugin/plugin.json
+bash .agents/install.sh cursor >/dev/null
+check "cursor plugin hook" jq -e '[.hooks.workspaceOpen[] | select(.command | contains("load-plugins"))] | length == 1' .cursor/hooks.json
+cmd=$(jq -r '.hooks.workspaceOpen[0].command' .cursor/hooks.json)
+check "plugin paths" sh -c "$cmd | jq -e '.pluginPaths | length == 1 and (.[0] | endswith(\"/plugins/demo\"))'"
+rm -rf .agents/plugins
+bash .agents/install.sh cursor >/dev/null
+check "plugin hook removed" jq -e '(.hooks.workspaceOpen // []) | length == 0' .cursor/hooks.json
 
 check "outside project root fails" sh -c "cd .agents && ! bash install.sh claude"
 

@@ -25,7 +25,7 @@ ls ~/.agents/hooks/deny-dangerous.sh ~/.agents/hooks/dangerous-patterns.txt
 ~/.agents/hooks/test-guard.sh   # must end "failed: 0"
 ```
 
-If missing, run `bash .agents/install.sh guard` from the root of a project that has this repo as `.agents/`. It copies the three hook files to `~/.agents/hooks/`, merges the Claude Code, Codex and Cursor entries below, and runs the test suite. Wire the other agents by hand from the table.
+If missing, run `bash .agents/install.sh guard` from the root of a project that has the agent-config copy at `.agents/`. It copies the three hook files to `~/.agents/hooks/`, merges the Claude Code, Codex and Cursor entries below, and runs the test suite. Wire the other agents by hand from the table.
 
 ## Add or tune a pattern
 

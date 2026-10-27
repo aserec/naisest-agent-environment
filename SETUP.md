@@ -1,8 +1,10 @@
 # Setup
 
-Add `agent-config` to any project, or set up a clone of a project that already uses it.
+Copy `agent-config` into a project, or set up a clone of a project that already has the copy.
 
-**Goal:** the project has the shared skills, the context-budget hook and the shared MCP servers (`figma`, `graft`). Your machine has the global command guard.
+**Goal:** the project has the shared skills, plugins and hooks, the context-budget hook and the shared MCP servers (`figma`, `graft`). Your machine has the global command guard.
+
+The copy lives at `.agents/` as normal files. It is not a git submodule. Refresh it with `sync.sh` from a local clone of this repo. `sync.sh` does not fetch, pull or clone. Origin is not a source.
 
 ## Option A: ask an agent
 
@@ -10,11 +12,13 @@ Open Claude Code (or another agent) in the project folder and paste this prompt:
 
 ```text
 Set up agent-config in this project by following .agents/SETUP.md
-(or https://github.com/aserec/agent-config/blob/main/SETUP.md if .agents/ is empty).
-- If .gitmodules already lists .agents, follow "Join an existing project". Otherwise follow "Add to a new project".
+(or SETUP.md in my local agent-config clone if .agents/ is empty).
+- Do not add a git submodule. Do not fetch or clone this repo from Origin.
+- The agent-config repo must already be cloned on this machine. If you cannot find it, ask me for the path.
+- If .gitmodules lists .agents, follow "Remove the submodule", then "Add to a new project".
+- If .agents/sync.json is missing, follow "Add to a new project". If it exists, follow "Update".
 - Ask me before you change anything global: ~/.gitconfig, ~/.claude, ~/.codex, ~/.cursor, ~/.agents/ (this includes `install.sh guard`).
 - In existing JSON files, merge entries. Never overwrite them.
-- If the clone fails with an access error, stop and tell me to request access to github.com/aserec/agent-config.
 - Run every check in "Verify" and report each one as passed or failed, with the output of any failure.
 - Tell me which steps need me (trusting the project and its hooks, MCP approval, the Figma login, /setup-matt-pocock-skills) and stop there.
 ```
@@ -22,7 +26,7 @@ Set up agent-config in this project by following .agents/SETUP.md
 ## Prerequisites
 
 - `git` and `jq`.
-- `gh` (GitHub CLI), because the repo is private.
+- A local clone of this repo, from GitHub (`git@github.com:aserec/agent-config.git` or the HTTPS URL). The repo is private: ask its owner for read access, then `gh auth login`. Sync does not clone it for you, and it does not pull from Origin.
 - Optional: graft, a code index served over MCP.
 
   ```sh
@@ -34,43 +38,46 @@ Set up agent-config in this project by following .agents/SETUP.md
 
   The index is a local cache. Add `/graft/` to the project's `.gitignore`. The `graft` skill is linked with the others and tells agents to query the index before reading source.
 
-## Access
-
-The repo is private. Ask its owner for read access. Then pick one way to log in:
-
-```sh
-gh auth login
-gh auth setup-git    # changes your global ~/.gitconfig
-```
-
-Or use the SSH URL `git@github.com:aserec/agent-config.git` instead of the HTTPS URL below.
-
 ## Add to a new project
 
-1. Add the submodule. Use the absolute URL. Use a relative URL only when both repos share the same host and namespace.
+From the project root, point `sync.sh` at this clone. The path must be a directory on disk.
 
-   ```sh
-   git submodule add https://github.com/aserec/agent-config.git .agents
-   ```
+```sh
+bash /absolute/path/to/agent-config/sync.sh
+```
 
-2. Run the installer from the project root. With no arguments it sets up every harness. To set up only some, name them: `claude cursor codex gemini copilot opencode`.
+It copies `skills/`, `plugins/` (when this repo has any), `hooks/`, `install.sh`, `mcp.json` and `SETUP.md` into `.agents/`, writes `.agents/sync.json`, then runs `install.sh`. It is safe to run again. A skill, plugin or hook that belongs only to the project stays. One that `sync.json` lists, and that this clone no longer has, is deleted.
 
-   ```sh
-   bash .agents/install.sh
-   ```
+To copy into a project that is not the current directory:
 
-   It is safe to run again. It merges into config files that already exist, keeps your own entries, and replaces only its own older entries. What it writes is in [What the installer writes](#what-the-installer-writes).
+```sh
+bash /absolute/path/to/agent-config/sync.sh /absolute/path/to/project
+```
 
-3. Commit what it wrote:
+`bash /absolute/path/to/agent-config/sync.sh check` reports drift and changes nothing.
 
-   ```sh
-   git add .gitmodules .agents .claude .mcp.json .cursor .codex .gemini .vscode/mcp.json opencode.json
-   git commit -m "chore: add agent-config"
-   ```
+Commit the copy:
+
+```sh
+git add .agents .claude .mcp.json .cursor .codex .gemini .vscode/mcp.json opencode.json
+git commit -m "chore: add agent-config"
+```
+
+## Remove the submodule
+
+Projects that already have `.agents` as a git submodule must drop that submodule before the first sync. `sync.sh` stops if `.agents` is still a submodule, a nested checkout, or a link.
+
+```sh
+git submodule deinit -f .agents
+git rm -f .agents
+rm -rf .git/modules/.agents
+```
+
+Then follow [Add to a new project](#add-to-a-new-project).
 
 ## What the installer writes
 
-The submodule sits at `.agents/`, so `.agents/skills/` is already the skill folder that Codex, Cursor, Gemini CLI, Copilot and OpenCode scan. Only Claude Code needs links. The installer adds the MCP servers and the hook that loads `structured-output` at the start of each session.
+The copy sits at `.agents/`, so `.agents/skills/` is already the skill folder that Codex, Cursor, Gemini CLI, Copilot and OpenCode scan. Only Claude Code needs links. The installer adds the MCP servers and the hook that loads `structured-output` at the start of each session. When `.agents/plugins/` has a folder, Cursor also gets a `workspaceOpen` hook that loads those plugins for this project.
 
 | Harness | Skills | MCP servers | `structured-output` at session start |
 | --- | --- | --- | --- |
@@ -84,9 +91,9 @@ The submodule sits at `.agents/`, so `.agents/skills/` is already the skill fold
 
 The context-budget hook runs only in Claude Code. It reads the Claude transcript format. In Copilot it finds no Claude session and does nothing.
 
-When a project already has its own `.mcp.json` or `.cursor/mcp.json` as a regular file, the installer merges the servers into it instead of linking. Rerun the installer after each update so the copies stay current.
+When a project already has its own `.mcp.json` or `.cursor/mcp.json` as a regular file, the installer merges the servers into it instead of linking. `sync.sh` reruns the installer, so the copies stay current.
 
-Hook commands find the project root through `CLAUDE_PROJECT_DIR`, `CURSOR_PROJECT_DIR` or `GEMINI_PROJECT_DIR`, else `git rev-parse --show-toplevel`. They do nothing when `.agents/` is not checked out.
+Hook commands find the project root through `CLAUDE_PROJECT_DIR`, `CURSOR_PROJECT_DIR` or `GEMINI_PROJECT_DIR`, else `git rev-parse --show-toplevel`. They do nothing when `.agents/` is missing.
 
 For any other harness: if it reads `.agents/skills/`, the skills work as they are. If it reads `AGENTS.md`, add this line to the project's `AGENTS.md` to load the reply format:
 
@@ -96,43 +103,9 @@ Follow .agents/skills/structured-output/SKILL.md for every chat reply.
 
 ## Join an existing project
 
-Clone with the submodule:
+Clone the project. The copy is already in the files. You do not init a submodule.
 
-```sh
-git clone --recurse-submodules <project URL>
-```
-
-If you already cloned without it:
-
-```sh
-git submodule update --init
-```
-
-Recommended, so that `pull` and `checkout` also update the submodule:
-
-```sh
-git config --global submodule.recurse true
-```
-
-If you forget the submodule, nothing warns you. The `.claude/skills/*` links point nowhere and no MCP servers load.
-
-## Use another URL for your clone only
-
-Use this for a fork, a mirror or a local path. The setting lives in `.git/config` and is never committed.
-
-```sh
-git config submodule..agents.url <URL or absolute path>
-git submodule update --init
-```
-
-For a local path, git 2.38 and later block the file transport. Allow it for each command:
-
-```sh
-git -c protocol.file.allow=always submodule update --init
-git -c protocol.file.allow=always submodule update --remote .agents
-```
-
-`git submodule sync` copies the `.gitmodules` URL over your setting. If you run it, run the `git config` line again.
+To refresh the copy you need this repo cloned on the machine. Then follow [Update](#update).
 
 ## Matt Pocock skills
 
@@ -148,7 +121,7 @@ Projects that used these skills before the `GLOSSARY.md` rename: rename `CONTEXT
 
 - **Claude Code:** start `claude`, trust the folder, approve the project MCP servers, then run `/mcp`, select `figma` and log in once in the browser.
 - **Codex:** trust the project. Codex loads `.codex/config.toml` and `.codex/hooks.json` only in trusted projects. Run `/hooks` and trust the `SessionStart` entry. Codex caps hook context at about 2,500 tokens, so it may cut the end of `structured-output`.
-- **Cursor:** approve the MCP servers in Settings, then log in to `figma`. Leave Settings, Agents, Third-Party Imports off. If it is on, Cursor also runs the Claude hooks and loads the skill twice.
+- **Cursor:** approve the MCP servers in Settings, then log in to `figma`. Leave Settings, Agents, Third-Party Imports off. If it is on, Cursor also runs the Claude hooks and loads the skill twice. After a sync that adds plugins, reload the window so `workspaceOpen` loads them.
 - **Gemini CLI:** trust the project hooks when Gemini asks. It asks again after each change to the hook entries.
 - **Copilot in VS Code:** turn on `chat.useClaudeHooks` to load the skill at session start.
 - **OpenCode:** nothing more.
@@ -172,22 +145,25 @@ cmp .agents/hooks/deny-dangerous.sh ~/.agents/hooks/deny-dangerous.sh && cmp .ag
 ## Verify
 
 ```sh
-git submodule status .agents                  # no leading "-"
+test -f .agents/sync.json                     # the copy recorded a sync
+git ls-files -s -- .agents | awk '$1 == "160000" && $4 == ".agents" { exit 1 }'
 find .claude/skills .mcp.json .cursor/mcp.json -maxdepth 1 -type l ! -exec test -e {} \; -print   # no output
-bash .agents/test-install.sh                  # ends "failed=0"
 bash .agents/hooks/test-context-budget.sh     # ends "failed=0"
 bash .agents/hooks/test-guard.sh              # ends "failed: 0"
 ~/.agents/hooks/test-guard.sh                 # ends "failed: 0"
 claude mcp list                               # lists figma and graft
 ```
 
+In this repo, `bash test-install.sh` and `bash test-sync.sh` both end `failed=0`.
+
 ## Update
 
+Update the local clone from GitHub yourself. `sync.sh` will not pull, and it will not use Origin. Then, from the project:
+
 ```sh
-git submodule update --remote .agents
-bash .agents/install.sh
+bash /absolute/path/to/agent-config/sync.sh
 git add -A .agents .claude .mcp.json .cursor .codex .gemini .vscode/mcp.json opencode.json
 git commit -m "chore: bump agent-config"
 ```
 
-The installer links new skills, removes links to skills that are gone, and replaces its older hook entries. Then run the drift check above.
+The sync replaces skills, plugins and hooks that came from this repo, leaves project-owned ones, and reruns the installer. The installer links new skills, removes links to skills that are gone, and replaces its older hook entries. Then run the drift check above.

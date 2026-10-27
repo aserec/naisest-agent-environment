@@ -15,6 +15,7 @@ touches() { echo "$staged" | grep -qE "$1"; }
 
 run check-skills bash check-skills.sh
 touches '^(install\.sh|test-install\.sh|mcp\.json|skills/|hooks/)' && run test-install bash test-install.sh
+touches '^(sync\.sh|test-sync\.sh)' && run test-sync bash test-sync.sh
 touches '^hooks/(context-budget|test-context-budget)' && run test-context-budget bash hooks/test-context-budget.sh
 touches '^hooks/(deny-dangerous|dangerous-patterns|test-guard)' && run test-guard bash hooks/test-guard.sh
 
