@@ -46,6 +46,13 @@
       "skills": {
         "doctor-plus": ".claude/skills/doctor-plus"
       }
+    },
+    "cathrynlavery/diagram-design": {
+      "repo": "https://github.com/cathrynlavery/diagram-design",
+      "ref": "97d795138448f6a739a0cebc3d9beb37a42077f1",
+      "skills": {
+        "diagram-design": "skills/diagram-design"
+      }
     }
   }
 }
