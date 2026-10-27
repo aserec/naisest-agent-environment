@@ -1,6 +1,7 @@
 ---
 name: figma-visual-check
 description: Diffs a Figma node against a browser screenshot of the built UI. Use after get_design_context, Code Connect, or any Figma-driven UI change.
+disable-model-invocation: true
 version: 1.0.0
 allowed-tools: Bash, Read, mcp__playwright__browser_navigate, mcp__playwright__browser_resize, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_hover
 metadata:
