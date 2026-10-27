@@ -63,11 +63,11 @@ Done when the user approved the commands and each run directory holds `stream.js
 
 ### 3. Judge each run
 
-Follow [references/scoring.md](references/scoring.md). It covers what the counts in `metrics.json` miss: which errors were the agent's fault, repeated work, skill routing per phase, skipped phases, and how closely the result matches the design. Open `header.png` to see the button. Write `report.md` in the run directory.
+Follow [references/scoring.md](references/scoring.md). It covers what the counts in `metrics.json` miss: which errors were the agent's fault, repeated work, skill routing per phase, skipped phases, how closely the result matches the design, and code quality from a blind subagent judge, saved as `quality.json`. Open `header.png` to see the button. Write `report.md` in the run directory.
 
 When `oracle_contamination` is not empty, the agent read the hidden tests. Mark the run invalid in the report.
 
-Done when each run directory has a `report.md` with every section from the template in scoring.md filled in.
+Done when each run directory has a `quality.json` and a `report.md` with every section from the template in scoring.md filled in.
 
 ### 4. Compare the runs
 

@@ -21,6 +21,9 @@ EXIT_BAD_INPUT = 2
 CALL_TEXT = 110
 ERROR_TEXT = 160
 KEY_TEXT = 80
+TEST_FILE = re.compile(r"\.(test|spec)\.|(^|/)e2e/")
+NOT_CODE = re.compile(r"^(\.audit/|graft/|\.gitignore$)")
+QUALITY_MAX = 30  # six rubric criteria scored 1-5 (references/scoring.md)
 SHELL_WRITE = re.compile(r"(?:>>?|tee(?:\s+-a)?)\s*['\"]?(?:\S*/)?0([1-7])-[a-z-]+\.md")  # also after `cd .audit`
 
 
@@ -41,6 +44,19 @@ def phases_written(call):
     if call["name"] == "Bash":
         return sorted({int(n) - 1 for n in SHELL_WRITE.findall(call["input"].get("command", ""))})
     return []
+
+
+def diff_size(run: Path) -> dict:
+    """Lines added in diff.patch, split into product code and tests. Phase files and tool caches are left out."""
+    size, path = {"src_added": 0, "test_added": 0, "files": 0}, None
+    patch = run / "diff.patch"
+    for line in patch.read_text(errors="replace").splitlines() if patch.exists() else []:
+        if line.startswith("+++ "):
+            path = line[6:] if line.startswith("+++ b/") else None
+            size["files"] += bool(path and not NOT_CODE.match(path))
+        elif line.startswith("+") and path and not NOT_CODE.match(path):
+            size["test_added" if TEST_FILE.search(path) else "src_added"] += 1
+    return size
 
 
 def score(run: Path) -> dict:
@@ -149,6 +165,8 @@ def score(run: Path) -> dict:
         "per_phase": per_phase,
         "oracle_contamination": contamination,
         "checks": checks,
+        "diff": diff_size(run),
+        "quality": json.loads((run / "quality.json").read_text()) if (run / "quality.json").exists() else None,
     }
     (run / "metrics.json").write_text(json.dumps(metrics, indent=JSON_INDENT))
     with open(run / "timeline.txt", "w") as t:
@@ -163,7 +181,8 @@ def table(rows):
     def yes(v):
         return {True: "pass", False: "FAIL"}.get(v, "-")
     head = ["run", "model", "USD", "min", "turns", "calls", "out tok", "errors", "repeats",
-            "phase files", "phases worked", "in order", "oracle unit", "oracle e2e", "own tests", "design rules"]
+            "phase files", "phases worked", "in order", "oracle unit", "oracle e2e", "own tests", "design rules",
+            "src+/test+", "quality"]
     lines = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
     for m in rows:
         c = m["checks"]
@@ -171,11 +190,13 @@ def table(rows):
         own = c.get("agent_unit") and c.get("agent_e2e") and c.get("added_unit_test") and c.get("added_e2e_test")
         rules = c.get("protected_files_unchanged") and c.get("no_new_deps") and c.get("typecheck")
         cost = m["cost_usd"]
+        q = m.get("quality")
         lines.append("| " + " | ".join(str(x) for x in [
             m["label"], m["model"], f"{cost:.2f}" if cost is not None else "-", m["wall_minutes"], m["turns"],
             m["tool_calls"], m["tokens"]["output_tokens"], len(m["tool_errors"]), repeats,
             f"{m['phases_done']}/{len(PHASES)}", f"{m['phases_with_work']}/{len(PHASES)}", yes(m["phases_in_order"]), yes(c.get("oracle_unit")),
-            yes(c.get("oracle_e2e")), yes(own if c else None), yes(rules if c else None)]) + " |")
+            yes(c.get("oracle_e2e")), yes(own if c else None), yes(rules if c else None),
+            f"{m['diff']['src_added']}/{m['diff']['test_added']}", f"{q['total']}/{QUALITY_MAX}" if q else "-"]) + " |")
     return "\n".join(lines)
 
 
