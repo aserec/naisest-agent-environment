@@ -8,6 +8,17 @@ allowed-tools: Bash(pnpm exec playwright-cli:*) Bash(playwright-cli:*)
 
 Examples call bare `playwright-cli`. When it is not on PATH, prefix each command with `pnpm exec` (e.g. `pnpm exec playwright-cli open`); a project that lists `@playwright/cli` as a devDependency installs it with `pnpm install`.
 
+## Headless browser
+
+Use Obscura as the headless browser. Start it, then attach:
+
+```bash
+obscura serve --port 9222 --allow-private-network &
+playwright-cli attach --cdp=http://127.0.0.1:9222
+```
+
+`--allow-private-network` lets Obscura load localhost dev servers. Obscura has its own rendering engine, and long-tail CSS can differ from Chromium. When a check depends on exact layout or a screenshot, use `playwright-cli open` with Chromium instead. When done, run `playwright-cli detach` and stop the `obscura serve` process.
+
 ## Quick start
 
 ```bash
