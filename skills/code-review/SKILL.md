@@ -57,6 +57,8 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 
 ### 4. Spawn both sub-agents in parallel
 
+Spawn each sub-agent with `model: "sonnet"`. Both only read a diff and report, so they don't need the session's model.
+
 **Standards sub-agent prompt** should include:
 
 - The full diff command and commit list.
