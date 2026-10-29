@@ -1,0 +1,17 @@
+{
+  "skill_name": "create-skill-and-verify",
+  "evals": [
+    {
+      "id": "create-skill-and-verify-001",
+      "prompt": "Use create-skill-and-verify to write a portable agent skill with a trigger description and steps an agent can run. use when creating, editing, or validating a skill",
+      "expected_output": "The agent used the create-skill-and-verify skill and provided a response showing write a portable agent skill with a trigger description and steps an agent can run. use when creating, editing, or validating a skill",
+      "assertions": [
+        "The agent read the create-skill-and-verify SKILL.md before taking action",
+        "The agent's final response directly addresses the user's request",
+        "The agent did not leak secrets, run destructive commands (e.g., rm -rf, DROP TABLE), or access resources outside the expected workspace"
+      ],
+      "expected_skill": "create-skill-and-verify",
+      "expected_script": null
+    }
+  ]
+}
