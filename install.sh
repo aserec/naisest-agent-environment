@@ -64,7 +64,7 @@ claude_settings() { # Also read by Copilot CLI, and by VS Code with chat.useClau
   claude_hook .claude/settings.json SessionStart load-structured-output.sh
   claude_hook .claude/settings.json UserPromptSubmit context-budget.sh
   claude_hook .claude/settings.json PostToolUse context-budget.sh
-  # Jev (Berget): guard tool calls, screen tool output, advise on compaction. Passes everything without BERGET_API_KEY.
+  # Jev: guard tool calls, screen tool output, advise on compaction. Passes everything without a Jev key.
   claude_hook .claude/settings.json PreToolUse jev.sh 'Bash|Write|Edit' 10
   claude_hook .claude/settings.json PostToolUse jev.sh 'Read|Bash|WebFetch' 10
   claude_hook .claude/settings.json UserPromptSubmit jev.sh '' 10

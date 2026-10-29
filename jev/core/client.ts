@@ -238,6 +238,11 @@ export class JevClient {
   }
 }
 
+/** True when any live provider has a key. Without one, the Claude Code hooks and tools stay off. */
+export function hasJevKey(): boolean {
+  return Object.values(KEY_ENV).some((k) => Boolean(process.env[k]?.trim()));
+}
+
 function selectProvider(explicit?: JevProvider): JevProvider {
   // node:test cannot accidentally use ambient live credentials/overrides.
   // Explicit opts.provider or the existing JEV_LIVE=1 opt-in bypass isolation.

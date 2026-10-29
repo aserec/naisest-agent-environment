@@ -10,7 +10,7 @@
 import { exec } from "node:child_process";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
-import { jev } from "./core/client.ts";
+import { hasJevKey as hasKey, jev } from "./core/client.ts";
 import { BLOCK_NOTICE, gateBashCommand } from "./levels/level06/index.ts";
 import { askFileBool, askFileChoice, askFileScore, FileStateError } from "./levels/level08/index.ts";
 import { askFiles, pickFirstFile } from "./levels/level09/index.ts";
@@ -151,8 +151,6 @@ export async function callTool(name: string, args: unknown, cwd: string) {
     return text(known ? err.message : `jev error: ${err?.message ?? err}`, true);
   }
 }
-
-const hasKey = () => Boolean(process.env.BERGET_API_KEY?.trim());
 
 export async function respond(msg: any, cwd: string): Promise<unknown | null> {
   const ok = (result: unknown) => ({ jsonrpc: "2.0", id: msg.id, result });

@@ -86,8 +86,8 @@ test("UserPromptSubmit: below the notice line makes no Jev call", async (t) => {
   assert.equal(call.mock.callCount(), 0);
 });
 
-test("MCP: without BERGET_API_KEY the server sends no nudge and lists no tools", async () => {
-  delete process.env.BERGET_API_KEY;
+test("MCP: without a Jev key the server sends no nudge and lists no tools", async () => {
+  for (const k of ["BERGET_API_KEY", "TYPESAFE_API_KEY", "OPENROUTER_API_KEY"]) delete process.env[k];
   const init: any = await respond({ jsonrpc: "2.0", id: 1, method: "initialize" }, SANDBOX);
   assert.equal(init.result.instructions, undefined);
   const list: any = await respond({ jsonrpc: "2.0", id: 2, method: "tools/list" }, SANDBOX);
@@ -95,7 +95,7 @@ test("MCP: without BERGET_API_KEY the server sends no nudge and lists no tools",
 });
 
 test("MCP: initialize carries the nudge, tools/list has the six tools without their runners", async () => {
-  process.env.BERGET_API_KEY = "dummy";
+  process.env.OPENROUTER_API_KEY = "dummy";
   const init: any = await respond({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18" } }, SANDBOX);
   assert.match(init.result.instructions, /ask_jev/);
   const list: any = await respond({ jsonrpc: "2.0", id: 2, method: "tools/list" }, SANDBOX);

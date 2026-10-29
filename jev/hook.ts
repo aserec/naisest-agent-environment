@@ -6,12 +6,12 @@
  *   PostToolUse  Read, Bash, WebFetch   L6 C: result screen, mark injected instructions as data
  *   UserPromptSubmit           L7 A+C: tell the user when to /clear or /compact, and with what focus
  *
- * Every hook fails open: no key, a Berget error or a timeout lets the call through.
+ * Every hook fails open: no key (BERGET_API_KEY, TYPESAFE_API_KEY or OPENROUTER_API_KEY), a Berget error or a timeout lets the call through.
  * hooks/deny-dangerous.sh stays the hard floor for catastrophic commands.
  */
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { jev } from "./core/client.ts";
+import { hasJevKey, jev } from "./core/client.ts";
 import type { ChoiceAnswer } from "./core/types.ts";
 import { BLOCK_NOTICE, gateBashCommand, gateWriteCall, insideRepo, screenToolResult } from "./levels/level06/index.ts";
 import {
@@ -138,7 +138,7 @@ export async function handle(input: Input): Promise<Output> {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
-    if (!process.env.BERGET_API_KEY?.trim()) process.exit(0);
+    if (!hasJevKey()) process.exit(0);
     const out = await handle(JSON.parse(readFileSync(0, "utf8")));
     if (out) process.stdout.write(JSON.stringify(out));
   } catch (err: any) {
