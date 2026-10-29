@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { sharedJev } from "../core/client.ts";
-import { handle, LINES, readSession, resultText } from "../hook.ts";
+import { CLEAR_LINE, COMPACT_LINE, handle, pickAdvice, readSession, resultText } from "../hook.ts";
 import { respond, TOOLS } from "../mcp.ts";
 
 const SANDBOX = fileURLToPath(new URL("./sandbox/", import.meta.url));
@@ -62,22 +62,49 @@ test("readSession keeps real prompts, the last text, this turn's tools and the c
     line({ type: "assistant", message: { content: [{ type: "text", text: "Fixed." }, { type: "tool_use", name: "Bash" }], usage: usage(52_000) } }),
     "not json",
   ]);
-  assert.deepEqual(s, { prompts: ["fix the billing bug"], lastText: "Fixed.", tools: ["Read", "Bash"], tokens: 52_000 });
+  assert.deepEqual(s, { prompts: ["fix the billing bug"], lastText: "Fixed.", tools: ["Read", "Bash"], tokens: 52_000, compactions: 0 });
 });
 
-test("UserPromptSubmit: a switched task over the notice line tells the user to /clear", async (t) => {
+test("readSession counts compactions and skips the compact summary as a prompt", () => {
+  const s = readSession([
+    line({ type: "user", message: { content: "first task" } }),
+    line({ type: "system", subtype: "compact_boundary" }),
+    line({ type: "user", isCompactSummary: true, message: { content: "This session is being continued..." } }),
+    line({ type: "user", message: { content: "second task" } }),
+  ]);
+  assert.equal(s.compactions, 1);
+  assert.deepEqual(s.prompts, ["first task", "second task"]);
+});
+
+const scores = (switched: number, needs: number) =>
+  ({ switched_gears: { noul: switched }, at_boundary: { noul: 0 }, needs_history: { score: needs }, mid_operation: { noul: 0.9 } }) as any;
+
+test("pickAdvice: unrelated work clears from the clear line, related work compacts twice from the compact line, then hands off", () => {
+  const unrelated = scores(0.9, 0), related = scores(0.2, 2);
+  assert.equal(pickAdvice(unrelated, CLEAR_LINE - 1, 0), null);
+  assert.equal(pickAdvice(unrelated, CLEAR_LINE, 0), "clear");
+  assert.equal(pickAdvice(scores(0.9, 1.5), COMPACT_LINE - 1, 0), null);
+  assert.equal(pickAdvice(related, COMPACT_LINE - 1, 0), null);
+  // Mid operation does not hold back a compaction: the /compact focus keeps the recent turns.
+  assert.equal(pickAdvice(related, COMPACT_LINE, 0), "compact");
+  assert.equal(pickAdvice(related, COMPACT_LINE, 1), "compact");
+  assert.equal(pickAdvice(related, COMPACT_LINE, 2), "handoff");
+});
+
+test("UserPromptSubmit: a switched task over the clear line tells the user and the agent to /clear", async (t) => {
   const path = `${process.env.TMPDIR ?? "/tmp"}/jev-transcript-${process.pid}.jsonl`;
   const { writeFileSync } = await import("node:fs");
   writeFileSync(path, [
     line({ type: "user", message: { content: "review pricing docs" } }),
-    line({ type: "assistant", message: { content: [{ type: "text", text: "Done, summary above." }], usage: usage(LINES.recommend + 1000) } }),
+    line({ type: "assistant", message: { content: [{ type: "text", text: "Done, summary above." }], usage: usage(CLEAR_LINE + 1000) } }),
   ].join("\n"));
   answer(t, { switched_gears: { noul: 0.97 }, at_boundary: { noul: 0.9 }, needs_history: { score: 0 }, mid_operation: { noul: 0.05 } });
   const out: any = await handle({ hook_event_name: "UserPromptSubmit", cwd: SANDBOX, prompt: "now write the contributing guide", transcript_path: path });
-  assert.match(out.systemMessage, /Compact recommended.*71K.*\/clear/);
+  assert.match(out.systemMessage, /task changed.*101K.*\/clear/);
+  assert.equal(out.hookSpecificOutput.additionalContext, out.systemMessage);
 });
 
-test("UserPromptSubmit: below the notice line makes no Jev call", async (t) => {
+test("UserPromptSubmit: below the clear line makes no Jev call", async (t) => {
   const path = `${process.env.TMPDIR ?? "/tmp"}/jev-transcript-small-${process.pid}.jsonl`;
   const { writeFileSync } = await import("node:fs");
   writeFileSync(path, line({ type: "assistant", message: { content: [], usage: usage(1000) } }));

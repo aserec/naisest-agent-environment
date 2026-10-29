@@ -28,7 +28,6 @@ check ".mcp.json links to mcp.json"  jq -e '.mcpServers.figma' .mcp.json
 check "cursor keeps own server"      jq -e '.mcpServers.own and .mcpServers.figma' .cursor/mcp.json
 check "one SessionStart loader"      jq -e '[.hooks.SessionStart[].hooks[] | select(.command | contains("load-structured-output"))] | length == 1' .claude/settings.json
 check "own hook kept"                jq -e '[.hooks.SessionStart[].hooks[] | select(.command == "echo mine")] | length == 1' .claude/settings.json
-check "one context-budget per event" jq -e '[.hooks.UserPromptSubmit, .hooks.PostToolUse | [.[].hooks[] | select(.command | contains("context-budget"))] | length] == [1, 1]' .claude/settings.json
 check "jev hooks with matcher and timeout" jq -e '[.hooks.PreToolUse, .hooks.PostToolUse, .hooks.UserPromptSubmit | [.[] | select(.hooks[0].command | contains("jev.sh")) | {matcher, t: .hooks[0].timeout}]] == [[{matcher: "Bash|Write|Edit", t: 10}], [{matcher: "Read|Bash|WebFetch", t: 10}], [{matcher: null, t: 10}]]' .claude/settings.json
 check "codex servers written once"   test "$(grep -c '^\[mcp_servers\.' .codex/config.toml)" -eq "$(jq '.mcpServers | length' .agents/mcp.json)"
 check "codex figma url"              grep -q '^url = "https://mcp.figma.com/mcp"' .codex/config.toml
