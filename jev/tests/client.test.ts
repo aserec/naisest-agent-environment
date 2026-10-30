@@ -21,7 +21,7 @@ const endpoints = {
 // Each test file has its own process. Never inspect or use ambient credentials,
 // and deny all fetches unless this test supplies an entirely offline stub.
 beforeEach((t) => {
-  for (const key of ["BERGET_API_KEY", "TYPESAFE_API_KEY", "OPENROUTER_API_KEY", "JEV_BACKEND"]) delete process.env[key];
+  for (const key of ["DECISIONMODELS_API_KEY", "DECISIONMODELS_BASE_URL", "BERGET_API_KEY", "TYPESAFE_API_KEY", "OPENROUTER_API_KEY", "JEV_BACKEND"]) delete process.env[key];
   process.env.NODE_TEST_CONTEXT = "child-v8";
   process.env.JEV_LIVE = "0";
   assert.ok("mock" in t, "beforeEach requires a test context");
@@ -86,6 +86,45 @@ test("provider selection: a Berget key wins and posts the Berget model to Berget
   assert.equal(url, "https://api.berget.ai/v1/systemone");
   assert.equal(new Headers(init?.headers).get("authorization"), "Bearer dummy-berget");
   assert.equal(JSON.parse(String(init?.body)).model, "Cloudflare/clef-flash");
+});
+
+test("provider selection: a DecisionModels key wins and posts to DECISIONMODELS_BASE_URL", async (t) => {
+  productionEnv();
+  process.env.DECISIONMODELS_API_KEY = "dummy-dm";
+  process.env.DECISIONMODELS_BASE_URL = "https://dm.example/v1/systemone";
+  process.env.OPENROUTER_API_KEY = "dummy-or";
+  const fetch = stub(t);
+  const client = new JevClient();
+  assert.equal(client.provider, "decisionmodels");
+  await client.systemOne("urgent", questions);
+  const [url, init] = fetch.mock.calls[0].arguments;
+  assert.equal(url, "https://dm.example/v1/systemone");
+  assert.equal(new Headers(init?.headers).get("authorization"), "Bearer dummy-dm");
+  assert.equal(JSON.parse(String(init?.body)).model, "reax-1");
+  process.env.JEV_BACKEND = "openrouter";
+  assert.equal(new JevClient().provider, "openrouter");
+});
+
+test("DecisionModels splits more than 3 questions into requests of at most 3 and merges the answers", async (t) => {
+  productionEnv();
+  process.env.DECISIONMODELS_API_KEY = "dummy-dm";
+  process.env.DECISIONMODELS_BASE_URL = "https://dm.example/v1/systemone";
+  const fetch = stub(t, async (_url, init) => {
+    const ids = Object.keys(JSON.parse(String(init?.body)).questions);
+    const answers = Object.fromEntries(ids.map((id) => [id, { type: "noul", noul: 0.5 }]));
+    return ok({ model: "reax-1", answers, usage: { input_tokens: 10, output_tokens: 0 } });
+  });
+  const four = { a: noul("A?"), b: noul("B?"), c: noul("C?"), d: noul("D?") };
+  const r = await new JevClient().systemOne("s", four);
+  assert.deepEqual(fetch.mock.calls.map((c) => Object.keys(JSON.parse(String(c.arguments[1]?.body)).questions)), [["a", "b", "c"], ["d"]]);
+  assert.deepEqual(Object.keys(r.answers), ["a", "b", "c", "d"]);
+  assert.equal(r.usage.input_tokens, 20);
+});
+
+test("DecisionModels without DECISIONMODELS_BASE_URL fails closed", () => {
+  productionEnv();
+  process.env.DECISIONMODELS_API_KEY = "dummy-dm";
+  assert.throws(() => new JevClient(), /DECISIONMODELS_BASE_URL/);
 });
 
 for (const blank of [undefined, "", "  \t  "]) {

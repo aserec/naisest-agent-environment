@@ -1,6 +1,6 @@
 /**
  * JevClient — a provider and credential snapshot, with no runtime fallback.
- * Auto-selection prefers Berget, then TypeSafe, then OpenRouter. Mock requires an explicit
+ * Auto-selection prefers DecisionModels, then Berget, then TypeSafe, then OpenRouter. Mock requires an explicit
  * selection or node:test isolation; missing production credentials fail closed.
  */
 import { MockJev } from "./mock.ts";
@@ -13,7 +13,7 @@ import {
   type SystemOneResponse,
 } from "./types.ts";
 
-export type JevProvider = "mock" | "berget" | "openrouter" | "typesafe";
+export type JevProvider = "mock" | "berget" | "decisionmodels" | "openrouter" | "typesafe";
 
 const ENDPOINTS = {
   // Berget AI serves the TypeSafe /v1/systemone API from the EU.
@@ -23,6 +23,8 @@ const ENDPOINTS = {
 } as const;
 
 const DEFAULT_MODELS = {
+  // DecisionModels has no jev-latest; reax-1 takes the 3 questions the hooks send per request.
+  decisionmodels: process.env.DECISIONMODELS_MODEL?.trim() || "reax-1",
   // Berget does not serve jev-latest; this is one of its system-one models (preview).
   berget: "Cloudflare/clef-flash",
   openrouter: "~typesafe/jev-latest",
@@ -31,11 +33,13 @@ const DEFAULT_MODELS = {
 
 const KEY_ENV = {
   berget: "BERGET_API_KEY",
+  decisionmodels: "DECISIONMODELS_API_KEY",
   openrouter: "OPENROUTER_API_KEY",
   typesafe: "TYPESAFE_API_KEY",
 } as const;
 
-const RETRY_STATUSES = new Set([429, 502, 503, 529]);
+const DECISIONMODELS_MAX_QUESTIONS = 3;
+const RETRY_STATUSES =new Set([429, 502, 503, 529]);
 const REQUEST_TIMEOUT_MS = 30_000;
 const MAX_ATTEMPTS = 3;
 
@@ -115,8 +119,8 @@ export class JevClient {
   calls = 0;
 
   constructor(opts: JevClientOptions = {}) {
-    if (opts.apiKey !== undefined && opts.provider !== "berget" && opts.provider !== "typesafe" && opts.provider !== "openrouter") {
-      throw new Error("apiKey requires an explicit live opts.provider (berget, typesafe or openrouter).");
+    if (opts.apiKey !== undefined && opts.provider !== "berget" && opts.provider !== "decisionmodels" && opts.provider !== "typesafe" && opts.provider !== "openrouter") {
+      throw new Error("apiKey requires an explicit live opts.provider (berget, decisionmodels, typesafe or openrouter).");
     }
     this.provider = selectProvider(opts.provider);
     this.model = opts.model;
@@ -134,7 +138,12 @@ export class JevClient {
     }
     if (this.provider === "mock") return;
     this.apiKey = (opts.apiKey ?? process.env[KEY_ENV[this.provider]])?.trim();
-    this.endpoint = opts.baseUrl ?? ENDPOINTS[this.provider];
+    // DecisionModels publishes no fixed host, so its endpoint comes from the environment.
+    this.endpoint = opts.baseUrl ??
+      (this.provider === "decisionmodels" ? process.env.DECISIONMODELS_BASE_URL?.trim() : ENDPOINTS[this.provider]);
+    if (!this.endpoint) {
+      throw new Error('Provider "decisionmodels" needs DECISIONMODELS_BASE_URL, the full /v1/systemone endpoint URL.');
+    }
     if (!this.apiKey) {
       throw new Error(`Provider "${this.provider}" needs a nonblank apiKey or ${KEY_ENV[this.provider]}.`);
     }
@@ -162,6 +171,17 @@ export class JevClient {
     opts: { model?: string; signal?: AbortSignal } = {}
   ): Promise<SystemOneResult> {
     opts.signal?.throwIfAborted();
+    const ids = Object.keys(questions ?? {});
+    if (this.provider === "decisionmodels" && ids.length > DECISIONMODELS_MAX_QUESTIONS) {
+      // ponytail: fixed limit of 3 (reax-1, s1-pro); read max_questions from GET /v1/models if a model needs another.
+      const parts = await Promise.all(
+        Array.from({ length: Math.ceil(ids.length / DECISIONMODELS_MAX_QUESTIONS) }, (_, i) => {
+          const chunk = ids.slice(i * DECISIONMODELS_MAX_QUESTIONS, (i + 1) * DECISIONMODELS_MAX_QUESTIONS);
+          return this.systemOne(state, Object.fromEntries(chunk.map((id) => [id, questions[id]])), opts);
+        })
+      );
+      return mergeResults(parts);
+    }
     const requestedModel = opts.model ?? this.model ??
       (this.provider === "mock" ? this.mock.model : DEFAULT_MODELS[this.provider]);
     const body: SystemOneRequest = { model: requestedModel, state, questions };
@@ -249,13 +269,14 @@ function selectProvider(explicit?: JevProvider): JevProvider {
   const isolated = process.env.NODE_TEST_CONTEXT && process.env.JEV_LIVE !== "1";
   const selected = explicit ?? (isolated ? "mock" : process.env.JEV_BACKEND?.trim() || undefined);
   if (selected !== undefined) {
-    if (selected === "mock" || selected === "berget" || selected === "typesafe" || selected === "openrouter") return selected;
-    throw new Error(`Unknown JEV backend "${selected}"; use mock, berget, openrouter, or typesafe.`);
+    if (selected === "mock" || selected === "berget" || selected === "decisionmodels" || selected === "typesafe" || selected === "openrouter") return selected;
+    throw new Error(`Unknown JEV backend "${selected}"; use mock, berget, decisionmodels, openrouter, or typesafe.`);
   }
+  if (process.env.DECISIONMODELS_API_KEY?.trim()) return "decisionmodels";
   if (process.env.BERGET_API_KEY?.trim()) return "berget";
   if (process.env.TYPESAFE_API_KEY?.trim()) return "typesafe";
   if (process.env.OPENROUTER_API_KEY?.trim()) return "openrouter";
-  throw new Error("No Jev credentials: set BERGET_API_KEY, TYPESAFE_API_KEY or OPENROUTER_API_KEY, or explicitly select provider: mock / JEV_BACKEND=mock for offline use.");
+  throw new Error("No Jev credentials: set DECISIONMODELS_API_KEY, BERGET_API_KEY, TYPESAFE_API_KEY or OPENROUTER_API_KEY, or explicitly select provider: mock / JEV_BACKEND=mock for offline use.");
 }
 
 function resultCost(response: SystemOneResponse, provider: JevProvider, pricing?: JevPricing): JevCost {
@@ -267,6 +288,30 @@ function resultCost(response: SystemOneResponse, provider: JevProvider, pricing?
     if (isNonnegative(amount)) return { amount, source: "estimated" };
   }
   return { amount: null, source: "unknown" };
+}
+
+/** One result from several split requests. raw keeps the first request only. */
+function mergeResults(parts: SystemOneResult[]): SystemOneResult {
+  const sum = (pick: (p: SystemOneResult) => unknown) => {
+    const values = parts.map(pick);
+    return values.every(isNonnegative) ? (values as number[]).reduce((a, b) => a + b, 0) : undefined;
+  };
+  const usage = { ...parts[0].usage, input_tokens: sum((p) => p.usage.input_tokens)!, output_tokens: sum((p) => p.usage.output_tokens)! };
+  const cost = sum((p) => p.usage.cost);
+  if (cost === undefined) delete usage.cost;
+  else usage.cost = cost;
+  const metaCost = sum((p) => p.meta.cost.amount);
+  return {
+    ...parts[0],
+    answers: Object.assign({}, ...parts.map((p) => p.answers)),
+    usage,
+    meta: {
+      ...parts[0].meta,
+      elapsedMs: Math.max(...parts.map((p) => p.meta.elapsedMs)),
+      attempts: Math.max(...parts.map((p) => p.meta.attempts)),
+      cost: metaCost === undefined ? { amount: null, source: "unknown" } : { amount: metaCost, source: parts[0].meta.cost.source as "reported" },
+    },
+  };
 }
 
 function withMeta(

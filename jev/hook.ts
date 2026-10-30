@@ -6,7 +6,7 @@
  *   PostToolUse  Read, Bash, WebFetch   L6 C: result screen, mark injected instructions as data
  *   UserPromptSubmit           L7 A+C: /clear unrelated work, /compact related work, hand off after two compactions
  *
- * Every hook fails open: no key (BERGET_API_KEY, TYPESAFE_API_KEY or OPENROUTER_API_KEY), a Berget error or a timeout lets the call through.
+ * Every hook fails open: no key (DECISIONMODELS_API_KEY, BERGET_API_KEY, TYPESAFE_API_KEY or OPENROUTER_API_KEY), a provider error or a timeout lets the call through.
  * hooks/deny-dangerous.sh stays the hard floor for catastrophic commands.
  */
 import { readFileSync } from "node:fs";

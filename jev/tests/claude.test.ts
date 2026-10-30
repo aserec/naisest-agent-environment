@@ -114,7 +114,7 @@ test("UserPromptSubmit: below the clear line makes no Jev call", async (t) => {
 });
 
 test("MCP: without a Jev key the server sends no nudge and lists no tools", async () => {
-  for (const k of ["BERGET_API_KEY", "TYPESAFE_API_KEY", "OPENROUTER_API_KEY"]) delete process.env[k];
+  for (const k of ["DECISIONMODELS_API_KEY", "BERGET_API_KEY", "TYPESAFE_API_KEY", "OPENROUTER_API_KEY"]) delete process.env[k];
   const init: any = await respond({ jsonrpc: "2.0", id: 1, method: "initialize" }, SANDBOX);
   assert.equal(init.result.instructions, undefined);
   const list: any = await respond({ jsonrpc: "2.0", id: 2, method: "tools/list" }, SANDBOX);
