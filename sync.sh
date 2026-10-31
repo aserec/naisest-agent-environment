@@ -91,6 +91,7 @@ if [ "$mode" = check ]; then
   for f in install.sh mcp.json SETUP.md; do
     same "$src/$f" "$agents/$f" || note "drift: $f"
   done
+  [ ! -d "$src/jev" ] || diff -rq -x .DS_Store -x tests "$src/jev" "$agents/jev" >/dev/null 2>&1 || note "drift: jev"
   if [ -f "$agents/sync.json" ]; then
     for key in skills plugins hooks; do
       while IFS= read -r name; do
@@ -142,6 +143,11 @@ while IFS= read -r name; do
 done < <(file_names "$src/hooks")
 
 cp "$src/install.sh" "$src/mcp.json" "$src/SETUP.md" "$agents/"
+# Jev runtime only: the tests and their sandbox (with a planted injection) stay in the clone.
+if [ -d "$src/jev" ]; then
+  copy_name "$src" "$agents" jev
+  rm -rf "$agents/jev/tests"
+fi
 chmod +x "$agents/install.sh" "$agents"/hooks/*.sh
 
 jq -n --arg commit "$commit" --argjson skills "$skills_json" --argjson plugins "$plugins_json" --argjson hooks "$hooks_json" \

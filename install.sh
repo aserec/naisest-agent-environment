@@ -29,9 +29,10 @@ merge() { # $1 = JSON file, $2 = jq filter, rest = jq args. Creates the file if 
 
 # Claude-style hook list (Claude, Codex, Gemini): drop old entries for the same script, then add the current one.
 CLAUDE_HOOK='.hooks[$e] = ([(.hooks[$e] // [])[] | .hooks = [.hooks[]? | select((.command // "") | contains($s) | not)] | select(.hooks | length > 0)]
-  + [{hooks: [{type: "command", command: $c}]}])'
-claude_hook() { # $1 = file, $2 = event, $3 = script
-  merge "$1" "$CLAUDE_HOOK" --arg e "$2" --arg s "$rel/hooks/$3" --arg c "$(hookcmd "$3")"
+  + [{hooks: [{type: "command", command: $c} + (if $t == "" then {} else {timeout: ($t | tonumber)} end)]}
+    + (if $m == "" then {} else {matcher: $m} end)])'
+claude_hook() { # $1 = file, $2 = event, $3 = script, $4 = optional tool matcher, $5 = optional timeout in seconds
+  merge "$1" "$CLAUDE_HOOK" --arg e "$2" --arg s "$rel/hooks/$3" --arg c "$(hookcmd "$3")" --arg m "${4:-}" --arg t "${5:-}"
 }
 
 servers() { jq -c '.mcpServers' "$here/mcp.json"; }
@@ -61,8 +62,10 @@ claude() {
 claude_settings() { # Also read by Copilot CLI, and by VS Code with chat.useClaudeHooks.
   link_or_merge_mcp .mcp.json
   claude_hook .claude/settings.json SessionStart load-structured-output.sh
-  claude_hook .claude/settings.json UserPromptSubmit context-budget.sh
-  claude_hook .claude/settings.json PostToolUse context-budget.sh
+  # Jev: guard tool calls, screen tool output, advise /clear, /compact or a handoff. Passes everything without a Jev key.
+  claude_hook .claude/settings.json PreToolUse jev.sh 'Bash|Write|Edit' 10
+  claude_hook .claude/settings.json PostToolUse jev.sh 'Read|Bash|WebFetch' 10
+  claude_hook .claude/settings.json UserPromptSubmit jev.sh '' 10
 }
 
 cursor() { # Skills: reads .agents/skills natively. Plugins: workspaceOpen loads .agents/plugins when that folder has any.

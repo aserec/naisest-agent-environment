@@ -2,7 +2,7 @@
 
 Copy `agent-config` into a project, or set up a clone of a project that already has the copy.
 
-**Goal:** the project has the shared skills, plugins and hooks, the context-budget hook and the shared MCP servers (`figma`, `graft`). Your machine has the global command guard.
+**Goal:** the project has the shared skills, plugins and hooks, including the Jev hooks, and the shared MCP servers (`figma`, `graft`). Your machine has the global command guard.
 
 The copy lives at `.agents/` as normal files. It is not a git submodule. Refresh it with `sync.sh` from a local clone of this repo. `sync.sh` does not fetch, pull or clone. Origin is not a source.
 
@@ -89,7 +89,7 @@ The copy sits at `.agents/`, so `.agents/skills/` is already the skill folder th
 | Copilot in VS Code | native | `.vscode/mcp.json` | reads `.claude/settings.json` hooks when `chat.useClaudeHooks` is on |
 | OpenCode | native | `mcp` in `opencode.json` | `instructions` in `opencode.json` (OpenCode has no shell hooks) |
 
-The context-budget hook runs only in Claude Code. It reads the Claude transcript format. In Copilot it finds no Claude session and does nothing.
+The Jev context advice runs only in Claude Code. It reads the Claude transcript format. In Copilot it finds no Claude session and does nothing.
 
 When a project already has its own `.mcp.json` or `.cursor/mcp.json` as a regular file, the installer merges the servers into it instead of linking. `sync.sh` reruns the installer, so the copies stay current.
 
@@ -148,7 +148,6 @@ cmp .agents/hooks/deny-dangerous.sh ~/.agents/hooks/deny-dangerous.sh && cmp .ag
 test -f .agents/sync.json                     # the copy recorded a sync
 git ls-files -s -- .agents | awk '$1 == "160000" && $4 == ".agents" { exit 1 }'
 find .claude/skills .mcp.json .cursor/mcp.json -maxdepth 1 -type l ! -exec test -e {} \; -print   # no output
-bash .agents/hooks/test-context-budget.sh     # ends "failed=0"
 bash .agents/hooks/test-guard.sh              # ends "failed: 0"
 ~/.agents/hooks/test-guard.sh                 # ends "failed: 0"
 claude mcp list                               # lists figma and graft

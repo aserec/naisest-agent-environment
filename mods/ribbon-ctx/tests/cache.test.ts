@@ -150,3 +150,26 @@ test('the context window leads as a CTX bar with the tokens used',async ($, on) 
   expect(at('5H ')).toBeLessThan(at('7D '))
   await band.unmount()
 })
+
+test('the CTX entry shows what the session has cost, and follows each new total', async ($, on) => {
+  mock.store(on)
+  mock.clock(on, { now: NOW })
+  on('session.start', ($, e) => ({ cwd: e.cwd }))
+  on('session.usage', () => ({ value: { startedAt: 0, context: { window: 1000000 }, rateLimits: WINDOWS, cost: { usd: 3.4167 } } }))
+  on('session.measure', ($, e) => ({ changed: e.changed }))
+  on('classic.SessionStart', () => ({}))
+  await $.session.start({ surface: 'terminal', isInteractive: true, cwd: '/work' })
+  await $.classic.SessionStart({ source: 'resume', seconds_since_last_response: WARM_IDLE, context_tokens: 770000, model: 'claude-opus-5-5' })
+
+  // Wide puts it on the CTX row, stacked gives it the CTX block's third line.
+  for (const bodyColumns of [80, 60]) {
+    const band = await $.ui.mount({ plugin: 'ribbon-ctx', surface: 'terminal', component: 'AbovePrompt', props: { ...PROPS, bodyColumns } })
+    expect(JSON.stringify(await band.findAll({ type: 'Text' }))).toContain('$3.42 spent')
+    await band.unmount()
+  }
+
+  await $.session.measure({ context: { window: 1000000 }, rateLimits: WINDOWS, cost: { usd: 12.5 }, changed: ['cost'] })
+  const band = await $.ui.mount({ plugin: 'ribbon-ctx', surface: 'terminal', component: 'AbovePrompt', props: PROPS })
+  expect(JSON.stringify(await band.findAll({ type: 'Text' }))).toContain('$12.50 spent')
+  await band.unmount()
+})

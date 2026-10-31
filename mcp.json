@@ -9,6 +9,12 @@
       "args": [
         "mcp"
       ]
+    },
+    "jev": {
+      "command": "node",
+      "args": [
+        ".agents/jev/mcp.ts"
+      ]
     }
   }
 }
