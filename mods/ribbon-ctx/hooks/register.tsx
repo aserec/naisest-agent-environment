@@ -28,13 +28,17 @@ const TICK_MS = 30_000
 const windows = atom({ plugin: 'ribbon-ctx', key: 'windows' } as const, [] as Window[])
 const cache = atom({ plugin: 'ribbon-ctx', key: 'cache' } as const, null as CacheFacts | null)
 const fold = atom({ plugin: 'ribbon-ctx', key: 'fold' } as const, null as Fold | null)
+const spent = atom({ plugin: 'ribbon-ctx', key: 'spent' } as const, null as number | null)
 
 const NAMES: Record<string, string> = { seven_day: '7D', five_hour: '5H', spend_limit: 'SPEND', context: 'CTX' }
 const ORDER: Record<string, number> = { five_hour: 0, seven_day: 1 }
 const COLORS: Record<string, string> = { seven_day: ORANGE, five_hour: YELLOW, context: TEXT }
 
-/** A window as drawn; `amount` replaces the "% left" text, and its bar then fills by what is used. */
-type Row = Window & { amount?: string; color?: string }
+/**
+ * A window as drawn; `amount` replaces the "% left" text, and its bar then fills by what is used.
+ * `note` is drawn where a reset time would go.
+ */
+type Row = Window & { amount?: string; color?: string; note?: string }
 
 /** The CTX bar is full at this many tokens, whatever the model's real window. */
 const CTX_CAP = 300_000
@@ -43,8 +47,8 @@ const RED = HUE.warm
 /** Cream up to 150k tokens, yellow past it, red past 250k. */
 export const ctxColor = (tokens: number): string => (tokens > 250_000 ? RED : tokens > 150_000 ? YELLOW : TEXT)
 
-/** The context window drawn as one more window, so it shares the bar and the LOW mark. */
-const contextWindow = (c: CacheFacts | null): Row | null => {
+/** The context window drawn as one more window, so it shares the bar and the LOW mark; the session's cost rides along. */
+const contextWindow = (c: CacheFacts | null, usdSpent: number | null): Row | null => {
   if (!c || c.window <= 0 || c.tokens <= 0) return null
   const cap = Math.min(c.window, CTX_CAP)
   return {
@@ -52,6 +56,7 @@ const contextWindow = (c: CacheFacts | null): Row | null => {
     percentUsed: Math.min(100, Math.round((c.tokens / cap) * 1000) / 10),
     amount: `${tok(c.tokens)} / ${tok(cap)}`,
     color: ctxColor(c.tokens),
+    note: usdSpent === null ? undefined : `${usd(usdSpent)} spent`,
   }
 }
 
@@ -94,6 +99,7 @@ export const viewOf = (c: CacheFacts | null, now: number): CacheView | null => {
 const pull = async ($: EngineInterface): Promise<void> => {
   const u = await $.session.usage()
   await update($, windows, () => clean(u.rateLimits))
+  await update($, spent, () => u.cost?.usd ?? null)
 }
 
 /** Fresh context figures from the engine onto the cache facts, when it has them. */
@@ -118,6 +124,10 @@ export const register: Register = on => {
   on('session.measure', async ($, e, next) => {
     if (e.changed.includes('rateLimits')) {
       await update($, windows, () => clean(e.rateLimits))
+    }
+    if (e.changed.includes('cost') && e.cost) {
+      const usdSpent = e.cost.usd
+      await update($, spent, () => usdSpent)
     }
     if (e.changed.includes('context') && e.context.tokens && e.context.tokens > 0) {
       const tokens = e.context.tokens
@@ -172,7 +182,7 @@ export const register: Register = on => {
     // Ask the surface, not the table: the terminal's table still lists Svg.
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
     const facts = await read($, cache)
-    const ctx = contextWindow(facts)
+    const ctx = contextWindow(facts, await read($, spent))
     const list: Row[] = ctx ? [ctx, ...(await read($, windows))] : await read($, windows)
     const now = await $.clock.now()
     const view = viewOf(facts, now)
@@ -199,6 +209,7 @@ export const register: Register = on => {
         name: NAMES[w.kind] ?? w.kind.toUpperCase(),
         d: dots(w.amount ? w.percentUsed : left, cells),
         reset: fmtReset(w.resetsAt, now),
+        note: w.note,
       }
     }
 
@@ -214,6 +225,7 @@ export const register: Register = on => {
           <Text color={p.col} bold> {p.amount}</Text>
           {p.left < LOW_AT ? <Text color={TEXT} bold> LOW</Text> : null}
           {p.reset ? <Text color={MUTED}> · {p.reset}</Text> : null}
+          {p.note ? <Text color={MUTED}> · {p.note}</Text> : null}
         </Box>
       )
     }
@@ -232,6 +244,7 @@ export const register: Register = on => {
             {p.left < LOW_AT ? <Text color={TEXT} bold> LOW</Text> : null}
           </Box>
           {p.reset ? <Text color={MUTED}>resets {p.reset}</Text> : null}
+          {p.note ? <Text color={MUTED}>{p.note}</Text> : null}
         </Box>
       )
     }

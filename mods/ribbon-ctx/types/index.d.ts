@@ -13,6 +13,7 @@ export type Fold = { mode: 'warm' | 'cold'; open: boolean }
 
 declare module 'claude-code' {
   interface PluginState {
-    'ribbon-ctx': { windows: Window[]; cache: CacheFacts | null; fold: Fold | null }
+    /** `spent`: US dollars this session has cost, as /cost totals it; null where the host keeps no ledger. */
+    'ribbon-ctx': { windows: Window[]; cache: CacheFacts | null; fold: Fold | null; spent: number | null }
   }
 }
