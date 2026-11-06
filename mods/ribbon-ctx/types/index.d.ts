@@ -11,9 +11,15 @@ export type CacheFacts = { lastAt: number; tokens: number; window: number; model
 /** Whether the cache card is open, remembered only for the state it was set in. */
 export type Fold = { mode: 'warm' | 'cold'; open: boolean }
 
+/**
+ * Where the main agent works: its folder relative to the checkout root, the git
+ * branch, and the linked worktree's name (null in the main checkout or outside git).
+ */
+export type Where = { folder: string; branch: string | null; worktree: string | null }
+
 declare module 'claude-code' {
   interface PluginState {
     /** `spent`: US dollars this session has cost, as /cost totals it; null where the host keeps no ledger. */
-    'ribbon-ctx': { windows: Window[]; cache: CacheFacts | null; fold: Fold | null; spent: number | null }
+    'ribbon-ctx': { windows: Window[]; cache: CacheFacts | null; fold: Fold | null; spent: number | null; where: Where | null }
   }
 }

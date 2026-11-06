@@ -1,7 +1,7 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { CacheFacts, Fold, Window } from '../types'
+import type { CacheFacts, Fold, Where, Window } from '../types'
 import {
   BG, EMPTY, HUE, INK, MUTED, ORANGE, ROBO_SIZE, TEXT, TTL_MIN, TTL_MS, WORD, YELLOW,
   bandPx, cardSvg, chipSvg, costOf, familyOf, fmtIdle, kindOf, mineModel, roboSvg, tok, usd,
@@ -24,11 +24,42 @@ const LOW_AT = 15
 const TIGHT_CELLS = 6
 /** How often the band redraws, so the countdown and the warm-to-cold flip stay current. */
 const TICK_MS = 30_000
+/** How often the WHERE row asks git where the agent is. */
+const WHERE_MS = 20_000
 
 const windows = atom({ plugin: 'ribbon-ctx', key: 'windows' } as const, [] as Window[])
 const cache = atom({ plugin: 'ribbon-ctx', key: 'cache' } as const, null as CacheFacts | null)
 const fold = atom({ plugin: 'ribbon-ctx', key: 'fold' } as const, null as Fold | null)
 const spent = atom({ plugin: 'ribbon-ctx', key: 'spent' } as const, null as number | null)
+const where = atom({ plugin: 'ribbon-ctx', key: 'where' } as const, null as Where | null)
+
+const base = (p: string): string => p.replace(/\/+$/, '').split('/').pop() || p
+
+/**
+ * Where the agent works, from `git rev-parse --show-toplevel --abbrev-ref HEAD
+ * --path-format=absolute --git-common-dir` run in `cwd`; `git` null outside a repo.
+ * A linked worktree's common dir sits outside its top level; the main checkout's is `<top>/.git`.
+ */
+export const whereOf = (cwd: string, git: string | null): Where => {
+  const [top, head, common] = (git ?? '').trim().split('\n')
+  if (!top || !head || !common) return { folder: base(cwd), branch: null, worktree: null }
+  const rel = cwd.startsWith(top) ? cwd.slice(top.length).replace(/^\/+/, '') : ''
+  const isLinked = common.replace(/\/+$/, '') !== `${top}/.git`
+  return {
+    folder: rel ? `${base(top)}/${rel}` : base(top),
+    branch: head === 'HEAD' ? 'detached' : head,
+    worktree: isLinked ? base(top) : null,
+  }
+}
+
+const locate = async ($: EngineInterface): Promise<void> => {
+  const cwd = await $.session.cwd()
+  const r = await $.process
+    .run(['git', 'rev-parse', '--show-toplevel', '--abbrev-ref', 'HEAD', '--path-format=absolute', '--git-common-dir'], { cwd, timeoutMs: 5_000 })
+    .catch(() => null)
+  const next = whereOf(cwd, r && r.exitCode === 0 ? r.stdout : null)
+  await update($, where, w => (w && JSON.stringify(w) === JSON.stringify(next) ? w : next))
+}
 
 const NAMES: Record<string, string> = { seven_day: '7D', five_hour: '5H', spend_limit: 'SPEND', context: 'CTX' }
 const ORDER: Record<string, number> = { five_hour: 0, seven_day: 1 }
@@ -117,7 +148,10 @@ const measure = async ($: EngineInterface, lastAt: number | null, model: string 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await pull($)
+    await locate($)
     $.clock.every(TICK_MS, () => $.ui.invalidate('ui.render'))
+    // Catches a branch or worktree change made outside the agent; `locate` redraws only on a change.
+    $.clock.every(WHERE_MS, () => void locate($).catch(() => undefined))
     return next(e)
   })
 
@@ -170,6 +204,14 @@ export const register: Register = on => {
     // turn.step stamps the exact request time; when no step of this turn did, the turn's end is the floor.
     const lastAt = !c || now - c.lastAt > e.durationMs ? now : c.lastAt
     await measure($, lastAt, e.usage?.model ?? null)
+    await locate($).catch(() => undefined)
+    return r
+  })
+
+  // A tool call (a `cd`, a checkout, EnterWorktree) can move the agent: look again after each.
+  on('tool.call', async ($, e, next) => {
+    const r = await next(e)
+    void locate($).catch(() => undefined)
     return r
   })
 
@@ -178,6 +220,17 @@ export const register: Register = on => {
 
     const ui = $.ui.resolve(e)
     const { Box, Button, Text } = ui
+    const at = await read($, where)
+    const whereRow = at ? (
+      <Box key="where" flexDirection="row" flexWrap="wrap" paddingX={1}>
+        <Text color={TEXT} bold>WHERE </Text>
+        <Text color={TEXT}>{at.folder}</Text>
+        {at.branch ? <Text color={MUTED}> · branch </Text> : null}
+        {at.branch ? <Text color={YELLOW} bold>{at.branch}</Text> : null}
+        <Text color={MUTED}> · worktree </Text>
+        <Text color={at.worktree ? ORANGE : MUTED} bold={!!at.worktree}>{at.worktree ?? 'main checkout'}</Text>
+      </Box>
+    ) : null
     // Svg draws on desktop, mobile and VS Code; the terminal gets the text form.
     // Ask the surface, not the table: the terminal's table still lists Svg.
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
@@ -189,8 +242,11 @@ export const register: Register = on => {
 
     if (list.length === 0 && !view) {
       return (
-        <Box backgroundColor={BG} paddingX={1}>
-          <Text color={MUTED}>USAGE · waiting for the first reply</Text>
+        <Box flexDirection="column" backgroundColor={BG}>
+          {whereRow}
+          <Box paddingX={1}>
+            <Text color={MUTED}>USAGE · waiting for the first reply</Text>
+          </Box>
         </Box>
       )
     }
@@ -261,9 +317,12 @@ export const register: Register = on => {
     // Before the first reply there is no cache to show: today's band, as it was.
     if (!view) {
       return (
-        <Box flexDirection="row" backgroundColor={BG} paddingX={1}>
-          {label}
-          {usage}
+        <Box flexDirection="column" backgroundColor={BG}>
+          {whereRow}
+          <Box flexDirection="row" paddingX={1}>
+            {label}
+            {usage}
+          </Box>
         </Box>
       )
     }
@@ -370,6 +429,7 @@ export const register: Register = on => {
 
     return (
       <Box flexDirection="column" backgroundColor={BG}>
+        {whereRow}
         {rows}
         {card}
       </Box>
