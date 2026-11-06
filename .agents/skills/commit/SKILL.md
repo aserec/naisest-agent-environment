@@ -59,7 +59,7 @@ Read the Branch and commit conventions section of the repo engineering guide bef
 
 - Subject is `type(scope): imperative summary`, at most 72 characters, with no trailing period.
 - Types are `feat`, `fix`, `chore`, `docs`, `test`, `refactor`. Scope is one or more of `web`, `ui`, `auth`, `http`, `forms`, `i18n`, `observability`.
-- Add a bullet body only for a reason the diff does not show. Five bullets or fewer. No Tuleap id. No `Co-Authored-By` trailer and no agent attribution.
+- Add a bullet body only for a reason the diff does not show. Five bullets or fewer. No `Co-Authored-By` trailer and no agent attribution.
 - When that file is absent, use the same Conventional Commits shape and match the last 15 subjects.
 
 Write the draft in a fenced block, then go to step 4 in the same turn. Do not wait for approval.
