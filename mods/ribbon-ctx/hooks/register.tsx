@@ -32,6 +32,9 @@ const cache = atom({ plugin: 'ribbon-ctx', key: 'cache' } as const, null as Cach
 const fold = atom({ plugin: 'ribbon-ctx', key: 'fold' } as const, null as Fold | null)
 const spent = atom({ plugin: 'ribbon-ctx', key: 'spent' } as const, null as number | null)
 const where = atom({ plugin: 'ribbon-ctx', key: 'where' } as const, null as Where | null)
+const effort = atom({ plugin: 'ribbon-ctx', key: 'effort' } as const, null as string | null)
+/** Fill of the model chip on the WHERE row; no other part of the band uses it. */
+const VIOLET = '#b48ead'
 
 const base = (p: string): string => p.replace(/\/+$/, '').split('/').pop() || p
 
@@ -77,6 +80,9 @@ const RED = HUE.warm
 
 /** Cream up to 150k tokens, yellow past it, red past 250k. */
 export const ctxColor = (tokens: number): string => (tokens > 250_000 ? RED : tokens > 150_000 ? YELLOW : TEXT)
+
+/** `claude-opus-5-5[1m]` → `opus 5.5[1m]`. */
+export const modelName = (id: string): string => id.replace(/^claude-/, '').replace(/-(\d+)-(\d+)/, ' $1.$2')
 
 /** The context window drawn as one more window, so it shares the bar and the LOW mark; the session's cost rides along. */
 const contextWindow = (c: CacheFacts | null, usdSpent: number | null): Row | null => {
@@ -192,6 +198,9 @@ export const register: Register = on => {
     if (!e.agentId) {
       const now = await $.clock.now()
       await update($, cache, c => ({ lastAt: now, tokens: c?.tokens ?? 0, window: c?.window ?? 0, model: c?.model ?? null }))
+      // The engine names the effort only on a request; absent for a model without effort.
+      const level = e.effort === undefined ? null : String(e.effort)
+      await update($, effort, x => (x === level ? x : level))
     }
     yield* next(e)
   })
@@ -221,6 +230,10 @@ export const register: Register = on => {
     const ui = $.ui.resolve(e)
     const { Box, Button, Text } = ui
     const at = await read($, where)
+    const facts = await read($, cache)
+    // Asked on each draw, so a /model switch shows by the next redraw.
+    const model = (await $.session.model().catch(() => null)) || facts?.model || null
+    const level = await read($, effort)
     const whereRow = at ? (
       <Box key="where" flexDirection="row" flexWrap="wrap" paddingX={1}>
         <Text color={TEXT} bold>WHERE </Text>
@@ -228,13 +241,15 @@ export const register: Register = on => {
         {at.branch ? <Text color={MUTED}> · branch </Text> : null}
         {at.branch ? <Text color={YELLOW} bold>{at.branch}</Text> : null}
         <Text color={MUTED}> · worktree </Text>
-        <Text color={at.worktree ? ORANGE : MUTED} bold={!!at.worktree}>{at.worktree ?? 'main checkout'}</Text>
+        <Text color={YELLOW} bold>{at.worktree ?? 'main checkout'}</Text>
+        {model ? <Text color={MUTED}>{'  '}</Text> : null}
+        {model ? <Text backgroundColor={VIOLET} color={INK} bold>{` ${modelName(model).toUpperCase()} `}</Text> : null}
+        {level ? <Text backgroundColor={TEXT} color={INK} bold>{` ${level.toUpperCase()} EFFORT `}</Text> : null}
       </Box>
     ) : null
     // Svg draws on desktop, mobile and VS Code; the terminal gets the text form.
     // Ask the surface, not the table: the terminal's table still lists Svg.
     const Svg = e.surface !== 'terminal' && 'Svg' in ui ? ui.Svg : null
-    const facts = await read($, cache)
     const ctx = contextWindow(facts, await read($, spent))
     const list: Row[] = ctx ? [ctx, ...(await read($, windows))] : await read($, windows)
     const now = await $.clock.now()

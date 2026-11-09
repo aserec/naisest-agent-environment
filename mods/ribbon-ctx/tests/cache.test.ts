@@ -173,3 +173,45 @@ test('the CTX entry shows what the session has cost, and follows each new total'
   expect(JSON.stringify(await band.findAll({ type: 'Text' }))).toContain('$12.50 spent')
   await band.unmount()
 })
+
+test('the WHERE row names the model in use now', async ($, on) => {
+  mock.store(on)
+  mock.clock(on, { now: NOW })
+  let model = 'claude-opus-5-5'
+  on('session.start', ($, e) => ({ cwd: e.cwd }))
+  on('session.usage', () => ({ value: { startedAt: 0, context: { window: 1000000 }, rateLimits: WINDOWS, cost: { usd: 3.4167 } } }))
+  on('session.model', () => ({ value: model }))
+  on('session.cwd', () => ({ value: '/work' }))
+  on('classic.SessionStart', () => ({}))
+  await $.session.start({ surface: 'terminal', isInteractive: true, cwd: '/work' })
+  await $.classic.SessionStart({ source: 'resume', seconds_since_last_response: WARM_IDLE, context_tokens: 770000, model })
+
+  let band = await $.ui.mount({ plugin: 'ribbon-ctx', surface: 'terminal', component: 'AbovePrompt', props: PROPS })
+  expect(JSON.stringify(await band.findAll({ type: 'Text' }))).toContain(' OPUS 5.5 ')
+  await band.unmount()
+
+  model = 'claude-sonnet-5-5'
+  band = await $.ui.mount({ plugin: 'ribbon-ctx', surface: 'terminal', component: 'AbovePrompt', props: PROPS })
+  expect(JSON.stringify(await band.findAll({ type: 'Text' }))).toContain(' SONNET 5.5 ')
+  await band.unmount()
+})
+
+test('the WHERE row shows the effort the last request asked for', async ($, on) => {
+  mock.store(on)
+  mock.clock(on, { now: NOW })
+  on('session.start', ($, e) => ({ cwd: e.cwd }))
+  on('session.usage', () => ({ value: { startedAt: 0, context: { window: 1000000 }, rateLimits: WINDOWS } }))
+  on('session.model', () => ({ value: 'claude-opus-5-5' }))
+  on('session.cwd', () => ({ value: '/work' }))
+  on('turn.step', async function* ($, e) { return { turnId: 't', index: 0, answer: '', toolUses: [], stopReason: 'end_turn' } as never })
+  await $.session.start({ surface: 'terminal', isInteractive: true, cwd: '/work' })
+
+  let band = await $.ui.mount({ plugin: 'ribbon-ctx', surface: 'terminal', component: 'AbovePrompt', props: PROPS })
+  expect(JSON.stringify(await band.findAll({ type: 'Text' }))).not.toContain('EFFORT')
+  await band.unmount()
+
+  for await (const _ of $.turn.step({ turnId: 't', index: 0, model: 'claude-opus-5-5', effort: 'medium', messageCount: 1 } as never)) void _
+  band = await $.ui.mount({ plugin: 'ribbon-ctx', surface: 'terminal', component: 'AbovePrompt', props: PROPS })
+  expect(JSON.stringify(await band.findAll({ type: 'Text' }))).toContain(' MEDIUM EFFORT ')
+  await band.unmount()
+})

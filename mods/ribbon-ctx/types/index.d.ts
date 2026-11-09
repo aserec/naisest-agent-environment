@@ -19,7 +19,8 @@ export type Where = { folder: string; branch: string | null; worktree: string | 
 
 declare module 'claude-code' {
   interface PluginState {
+    /** `effort`: the level the main thread's last request asked for; null before one, or for a model without effort. */
     /** `spent`: US dollars this session has cost, as /cost totals it; null where the host keeps no ledger. */
-    'ribbon-ctx': { windows: Window[]; cache: CacheFacts | null; fold: Fold | null; spent: number | null; where: Where | null }
+    'ribbon-ctx': { windows: Window[]; cache: CacheFacts | null; fold: Fold | null; spent: number | null; where: Where | null; effort: string | null }
   }
 }
