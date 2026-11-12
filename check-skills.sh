@@ -1,5 +1,5 @@
 #!/bin/bash
-# Static checks on skills/. Run by the pre-commit hook; no network.
+# Static checks on skills/. Run by precommit.sh; no network.
 # - every skills/<dir> has a SKILL.md whose name: matches <dir>
 # - every `/skill` in a SKILL.md and every "Skill tool with <skill>" reference names a skill that exists (or a built-in command)
 # - every skill in upstream/upstream.json exists, and every upstream/patches/<skill>.patch names one

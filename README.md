@@ -11,7 +11,7 @@ Agent skills, plugins and hook scripts shared by my projects. Any agent that rea
 | `skills/` | One folder per skill. Static checks: `check-skills.sh`. |
 | `plugins/` | One folder per plugin, when this repo has any. Cursor loads the copy from `.agents/plugins/` when the project opens. |
 | `upstream/` | Skills copied from other repos. `upstream.json` lists each source, its pinned commit and the skills taken from it; `patches/` holds our edits to those skills; `sync.sh` copies them in. See [Upstream skills](#upstream-skills). |
-| `.githooks/pre-commit` | Runs `check-skills.sh`, plus the install, sync and hook tests when their files change. |
+| `precommit.sh` | Runs `check-skills.sh`, the install, sync and guard tests, and the Jev tests. Not a git hook. |
 | `jev/`, `hooks/jev.sh` | Jev on Celeris, Berget AI or OpenRouter, levels 6 to 10 of [ten-levels-of-jev](https://github.com/disler/ten-levels-of-jev). Hooks: a bash gate, a credential write gate and an injection screen on tool output (L6), and context advice on each prompt (L7): `/clear` from 100K when the task changed and needs none of the earlier work, `/compact` from 200K for related work, and a handoff file plus a fresh subagent once two compactions are spent. The advice reaches both the user and the agent. Claude Code only: it reads the Claude transcript format. MCP server `jev`: `ask_jev_file_*` (L8), `ask_jev_files` and `pick_first_file` (L9), `ask_jev` (L10). Needs `CELERIS_API_KEY` (model `celeris-1.1-decision`), `BERGET_API_KEY`, `TYPESAFE_API_KEY` or `OPENROUTER_API_KEY` in the shell that starts the agent, used in that order; `JEV_BACKEND=openrouter` picks OpenRouter when several keys are set; with none the hooks pass everything and the server lists no tools. Test: `node --test "jev/tests/*.test.ts"`. |
 | `hooks/load-structured-output.sh` | Session-start hook. Loads `skills/structured-output` into every session, in each harness that has hooks. |
 | `hooks/load-plugins.sh` | Cursor `workspaceOpen` hook. Prints the absolute paths of `.agents/plugins/*`. |
@@ -24,11 +24,7 @@ Clone this repo onto the machine from GitHub. Do not add it as a submodule, and 
 
 ## Work on this repo
 
-Enable the pre-commit hook once per clone:
-
-```sh
-git config core.hooksPath .githooks
-```
+When a change is complete, run `bash precommit.sh` before you commit.
 
 ## Upstream skills
 
