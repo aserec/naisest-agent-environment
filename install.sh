@@ -52,6 +52,8 @@ claude() {
   mkdir -p .claude/skills
   for d in "$here"/skills/*/; do
     n=$(basename "$d")
+    # A real folder here is the project's own copy of the skill; keep it.
+    [ -d ".claude/skills/$n" ] && [ ! -L ".claude/skills/$n" ] && continue
     ln -sfn "../../$rel/skills/$n" ".claude/skills/$n"
   done
   # Drop links to skills this repo no longer ships.

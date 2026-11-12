@@ -18,11 +18,13 @@ mkdir -p .cursor .claude/skills
 echo '{"mcpServers":{"own":{"command":"own-mcp"}}}' >.cursor/mcp.json
 echo '{"hooks":{"SessionStart":[{"hooks":[{"type":"command","command":"f=\"${CLAUDE_PROJECT_DIR:-.}/.agents/hooks/load-structured-output.sh\"; [ ! -f \"$f\" ] || bash \"$f\""},{"type":"command","command":"echo mine"}]}]}}' >.claude/settings.json
 ln -s ../../.agents/skills/removed-skill .claude/skills/removed-skill
+mkdir .claude/skills/commit && echo own >.claude/skills/commit/SKILL.md
 
 bash .agents/install.sh >/dev/null && bash .agents/install.sh >/dev/null
 check "install exits 0" test $? -eq 0
 
-check "claude skill link resolves"   test -f .claude/skills/commit/SKILL.md
+check "claude skill link resolves"   test -f .claude/skills/code-review/SKILL.md
+check "project-owned skill kept"     test ! -L .claude/skills/commit/commit -a "$(cat .claude/skills/commit/SKILL.md)" = own
 check "stale skill link removed"     test ! -L .claude/skills/removed-skill
 check ".mcp.json links to mcp.json"  jq -e '.mcpServers.figma' .mcp.json
 check "cursor keeps own server"      jq -e '.mcpServers.own and .mcpServers.figma' .cursor/mcp.json
