@@ -46,6 +46,13 @@
       "skills": {
         "diagram-design": "skills/diagram-design"
       }
+    },
+    "pbakaus/impeccable": {
+      "repo": "https://github.com/pbakaus/impeccable",
+      "ref": "b4bff1626c344067788c2679f048a20057c7cc5a",
+      "skills": {
+        "impeccable": "plugin/skills/impeccable"
+      }
     }
   }
 }
