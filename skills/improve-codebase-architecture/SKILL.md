@@ -34,7 +34,11 @@ Then spawn a sub-agent to walk the codebase. Don't follow rigid heuristics; expl
 
 Apply the **deletion test** to anything you suspect is shallow: would deleting it concentrate complexity, or just move it? A "yes, concentrates" is the signal you want.
 
+Tell the sub-agent to write its full findings to `<tmpdir>/architecture-review-<timestamp>.md` and return only that path, so a lost session can resume from the file. Step 1 is done when that file exists.
+
 ### 2. Present candidates as an HTML report
+
+Build the report from the findings file, and keep the same `<timestamp>` for the HTML.
 
 Write a self-contained HTML file to the OS temp directory so nothing lands in the repo. Resolve the temp dir from `$TMPDIR`, falling back to `/tmp` (or `%TEMP%` on Windows), and write to `<tmpdir>/architecture-review-<timestamp>.html` so each run gets a fresh file. Open it for the user (`xdg-open <path>` on Linux, `open <path>` on macOS, `start <path>` on Windows) and tell them the absolute path.
 

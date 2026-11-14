@@ -46,3 +46,18 @@ diff -ruN -x .DS_Store a/skills/improve-codebase-architecture/HTML-REPORT.md b/s
 -**Wins bullets** name the gain in glossary terms: *"locality: bugs concentrate in one module"*, *"leverage: one interface, N call sites"*, *"interface shrinks; implementation absorbs the wrappers"*. Don't write *"easier to maintain"* or *"cleaner code"*, because those terms aren't in the glossary and don't earn their place.
 -
 -No hedging, no throat-clearing, no "it's worth noting that…". If a sentence could be a bullet, make it a bullet. If a bullet could be cut, cut it. If a term isn't in the `/codebase-design` glossary, reach for one that is before inventing a new one.
+diff -ruN -x .DS_Store a/skills/improve-codebase-architecture/SKILL.md b/skills/improve-codebase-architecture/SKILL.md
+--- a/skills/improve-codebase-architecture/SKILL.md
++++ b/skills/improve-codebase-architecture/SKILL.md
+@@ -34,7 +34,11 @@
+ 
+ Apply the **deletion test** to anything you suspect is shallow: would deleting it concentrate complexity, or just move it? A "yes, concentrates" is the signal you want.
+ 
++Tell the sub-agent to write its full findings to `<tmpdir>/architecture-review-<timestamp>.md` and return only that path, so a lost session can resume from the file. Step 1 is done when that file exists.
++
+ ### 2. Present candidates as an HTML report
++
++Build the report from the findings file, and keep the same `<timestamp>` for the HTML.
+ 
+ Write a self-contained HTML file to the OS temp directory so nothing lands in the repo. Resolve the temp dir from `$TMPDIR`, falling back to `/tmp` (or `%TEMP%` on Windows), and write to `<tmpdir>/architecture-review-<timestamp>.html` so each run gets a fresh file. Open it for the user (`xdg-open <path>` on Linux, `open <path>` on macOS, `start <path>` on Windows) and tell them the absolute path.
+ 
