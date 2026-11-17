@@ -18,18 +18,20 @@ Use this on every chat message you send the user. Apply the rules in [references
 
 The layout is rendered markup only. The terminal draws a heading as styled text and hides its `#` marks, so a reader who selects and copies the reply gets the words and nothing else. Drawn borders, bars and rules are characters that the copy picks up.
 
-The message is done when the headings below are the whole reply, the checks in the steps hold, and no pattern from those rules remains.
+The message is done when every item in the [Checklist](#checklist) holds.
 
 ## Brevity
+
+The reader acts on the outcome. A sentence that does not carry it delays them.
 
 - Open with the title. Skip the preamble ("Let me...", "Now I'll...") and the narration of each step you took.
 - Answer a simple question in one to three sentences under Answer.
 - When the user asks for an explanation or detail, give it in full. Brevity never withholds what was asked for.
-- Error reports, failing test output, security warnings and confirmations for destructive actions keep their full content.
+- Error reports, failing test output, security warnings and confirmations for destructive actions keep their full content. Why: a cut line can hide the cause or the risk.
 
 ## Instructions
 
-Run this before you send a chat reply. The section labels are fixed. Write them in this order.
+Run this before you send a chat reply. The section labels are fixed. Write them in this order. Why: every reply then has each part in the same place.
 
 1. Title
 2. Answer
@@ -40,45 +42,45 @@ Run this before you send a chat reply. The section labels are fixed. Write them 
 
 ### 1. Name the thread
 
-Write a short title that names the whole conversation.
+Write a title of at most eight words that names the whole conversation. Why: one line tells the reader which thread this is.
 
-Done when the title names the thread.
+Done when the title names the thread in at most eight words.
 
 ### 2. Write the outcome
 
 Write Answer. State what you did, what you left undone, and any problem that stopped the work. Keep a sentence only when it changes what the reader does or decides next. Number the items when there is more than one.
 
-Done when Answer states the outcome and any blocker in at most eight sentences.
+Done when Answer states the outcome and any blocker in at most eight sentences, or in more only for content that Brevity keeps in full.
 
-### 3. Cut AI tells
+### 3. List steps that need a link
 
-Rewrite every sentence in the reply with the rules in [references/unslop-rules.md](references/unslop-rules.md). Then delete any sentence that still adds no fact, decision, or next action.
-
-Done when a pass over those rules finds no banned pattern in the reply.
-
-### 4. List steps that need a link
-
-Add Steps only when the reader must open a URL. Each item is one number, one action, and one absolute URL. The URL may be a localhost address or an external address. Omit the whole section when no such action exists.
+Add Steps only when the reader must open a URL. Each item is one number, one action, and one absolute URL. The URL may be a localhost address or an external address. Omit the whole section when no such action exists. Why: the reader opens each item with one click.
 
 Done when every Steps item has one absolute URL, or the section is absent.
 
-### 5. Ask what you cannot decide
+### 4. Ask what you cannot decide
 
-Add Questions only for decisions you cannot make from the request, the code, or a project rule. Number each question. Omit the whole section when none remain.
+Add Questions only for decisions you cannot make from the request, the code, or a project rule. Number each question. Omit the whole section when none remain. Why: each question stops the work until the reader answers.
 
 Done when every question is numbered and needs the reader, or the section is absent.
 
-### 6. Restate the ask
+### 5. Restate the ask
 
-Write Request as one line with no heading: the bold label, then a short title that names the ask. Example: `**💬 Request:** Change the font color`.
+Write Request as one line with no heading: the bold label, then a title of at most eight words that names the ask. Example: `**💬 Request:** Change the font color`.
 
 Done when Request is that single line.
 
-### 7. Summarize in one sentence
+### 6. Summarize in one sentence
 
-Write Summary as one sentence that states what was done.
+Write Summary as one sentence that states what was done. Why: a reader who reads only the last line gets the outcome.
 
 Done when Summary is that single sentence.
+
+### 7. Cut AI tells
+
+Rewrite every sentence of the reply, from the title to Summary, with the rules in [references/unslop-rules.md](references/unslop-rules.md). Then delete any sentence that still adds no fact, decision, or next action.
+
+Done when a pass over those rules finds no banned pattern in the reply.
 
 ### 8. Lay out the reply
 
@@ -86,12 +88,12 @@ Build the reply from markdown headings, which the terminal renders as styled tex
 
 - The first line is the thread title as a level-2 heading with its icon: `## 📌 Thread title`.
 - Each section opens with a level-3 heading: `### ✅ Answer`, `### 🔗 Steps`, `### ❓ Questions`, `### 📝 Summary`.
-- Request is a single bold line, not a heading: `**💬 Request:** Title of the ask`.
+- Request is a single bold line, not a heading: `**💬 Request:** Title of the ask`. Why: it only repeats the ask, so one line is enough.
 - Under each heading, write plain paragraphs or a numbered list, with one blank line between blocks.
 - Send the headings and their content only, with no text before the title or after Summary.
 - Keep text upright and plain: the headings carry the structure. Bold `**...**` is fine inside a line.
 
-The first example below is the full reply. When Steps or Questions is absent, omit that heading and its content. The second example shows that shorter reply.
+The first example under Examples is the full reply. When Steps or Questions is absent, omit that heading and its content. The second example shows that shorter reply.
 
 Done when the reply opens with the title heading, every section except Request sits under its own heading, Request and Summary close it, and the reply holds no drawn border, bar, rule or `>` prefix.
 
@@ -160,3 +162,16 @@ This skill shapes chat replies. File edits, commits, and document rewrites stay 
 **The reply renders in italics.** Text sits inside `*...*` or `_..._`, or a line starts with `>`. Remove the marker so the text is upright.
 
 **A banned pattern remains after the rewrite.** Open [references/unslop-rules.md](references/unslop-rules.md), apply the matching rule, and send the reply only after a second pass finds none.
+
+## Checklist
+
+Run this before you send the reply. When an item fails, follow "A check fails" under Troubleshooting.
+
+- [ ] Nothing comes before the `## 📌` title line or after Summary.
+- [ ] The parts are in the fixed order, and Steps and Questions are absent when empty.
+- [ ] The title and the Request title each have at most eight words.
+- [ ] Answer has at most eight sentences, or more only for content that Brevity keeps in full.
+- [ ] Every Steps item has one absolute URL, and every question needs the reader.
+- [ ] Request is one bold line, and Summary is one sentence.
+- [ ] A pass over the unslop rules finds no banned pattern.
+- [ ] No line has a drawn border, bar or rule, a `>` prefix, or italics.

@@ -25,17 +25,19 @@ Writing is done when every word in the text and every new name passes that test.
 
 ## Instructions
 
-Pick the branch that fits the task. Writing runs on every task. Review runs only when the user asks for it.
+Pick the branch that fits the task. Writing runs on every task. Review runs only when the user asks for it. Before you say the work is done, run the [Checklist](#checklist).
 
 ### Writing
 
 #### 1. Pick the plain word
 
-Use the short, common word. Use one word for one meaning, and keep the same word every time that meaning comes back. Use short sentences in the active voice.
+Use the short, common word. Use one word for one meaning, and keep the same word every time that meaning comes back. Why: a second word makes the reader look for a second meaning.
+
+Write sentences of at most 25 words, in the active voice. Why: a long sentence makes a non-native reader read it twice.
 
 For a word you are not sure about, look it up in [references/word-swaps.md](references/word-swaps.md) and take the plain word it gives.
 
-Done when every word in the text passes the test in Purpose.
+Done when every word in the text passes the test in Purpose, and no sentence has more than 25 words.
 
 #### 2. Name code with everyday programming words
 
@@ -76,7 +78,7 @@ For each failing name, write a plain name with the same meaning. Search the code
 
 Done when each failing name has a replacement with no clash and a usage count.
 
-#### 5. Report and wait
+#### 5. Show the table
 
 Show one table, sorted by file:
 
@@ -84,11 +86,27 @@ Show one table, sorted by file:
 | File:line | Now | Proposed | Hard word | Uses |
 ```
 
-Mark names that other systems read (public API, exported package members, stored keys) as "breaking". Ask the user which renames to apply. Do not rename before the user says yes.
+Mark names that other systems read (public API, exported package members, stored keys) as "breaking".
 
-When the user approves, rename every use, run the project's type check and tests, and report the result.
+Done when the user has the table, and every such name is marked.
 
-Done when the user has the table, or the approved renames are applied and the checks pass.
+#### 6. Ask and wait
+
+Ask the user which renames to apply. Do not rename before the user says yes. Why: a rename can break systems that read the name, so the user decides.
+
+Done when the question is sent and no name has changed.
+
+#### 7. Rename what the user approved
+
+When the user approves, rename every use of each approved name.
+
+Done when the approved renames are applied.
+
+#### 8. Run the checks
+
+Run the project's type check and tests, and report the result.
+
+Done when the checks pass and the user has the result.
 
 ## Examples
 
@@ -130,3 +148,22 @@ The word list is a guide, not a full dictionary. Judge words that are not on it 
 **The hard word is the product's own term.** Keep it, and say so in the Review table with "kept: domain word".
 
 **A rename breaks the build.** Read the error, rename the missed use, and run the checks again. Report any use you could not rename.
+
+## Checklist
+
+Run this before you say the work is done. Use the list of each branch you ran.
+
+Writing:
+
+- [ ] Every word in the text passes the test in Purpose.
+- [ ] Each meaning has one word, the same every time.
+- [ ] No sentence has more than 25 words, and each is in the active voice.
+- [ ] Every name you added or changed is a plain verb plus a plain noun, or a kept term.
+
+Review:
+
+- [ ] Every name in scope is marked pass or fail.
+- [ ] Every failing name has a replacement with no clash and a usage count.
+- [ ] The table is sorted by file, and each name that other systems read is marked "breaking".
+- [ ] No name changed before the user said yes.
+- [ ] After approved renames, the type check and tests pass, and the user has the result.
