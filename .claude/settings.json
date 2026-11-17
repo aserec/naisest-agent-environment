@@ -1,0 +1,54 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"${CLAUDE_PROJECT_DIR:-.}/.agents/hooks/load-structured-output.sh\"; [ ! -f \"$f\" ] || bash \"$f\""
+          },
+          {
+            "type": "command",
+            "command": "echo mine"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"${CLAUDE_PROJECT_DIR:-.}/hooks/jev.sh\"; [ ! -f \"$f\" ] || bash \"$f\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Read|Bash|WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"${CLAUDE_PROJECT_DIR:-.}/hooks/jev.sh\"; [ ! -f \"$f\" ] || bash \"$f\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"${CLAUDE_PROJECT_DIR:-.}/hooks/jev.sh\"; [ ! -f \"$f\" ] || bash \"$f\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
