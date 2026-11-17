@@ -9,6 +9,7 @@ run() { # $1 = label, rest = command
 run check-skills bash check-skills.sh
 run test-install bash test-install.sh
 run test-sync bash test-sync.sh
+run test-sync-all bash test-sync-all.sh
 run test-guard bash hooks/test-guard.sh
 run jev node --test "jev/tests/*.test.ts"
 exit "$fail"

@@ -7,7 +7,7 @@ Agent skills, plugins and hook scripts shared by my projects. Any agent that rea
 | Path | What |
 | --- | --- |
 | `sync.sh` | Copies `skills/`, `plugins/`, `hooks/`, `install.sh`, `mcp.json` and `SETUP.md` into another project's `.agents/`. The copy is plain files, not a git submodule. It reads this clone on disk and does not fetch from a remote or from Origin. Test: `test-sync.sh`. |
-| `sync-all.sh` | Runs `sync.sh` in every project under `$HOME` that has a `.agents/sync.json`. `sync-all.sh check` reports drift only. |
+| `sync-all.sh` | Runs `sync.sh` in every project under `$HOME` that has a `.agents/sync.json` and commits the result as `chore: bump agent-config`. It skips a project whose worktree is dirty or that is not a git repo, and lists every skipped project with the reason. `sync-all.sh check` reports drift only. Test: `test-sync-all.sh`. |
 | `install.sh` | Wires that copy into the project for Claude Code, Codex, Cursor, Gemini CLI, Copilot and OpenCode: skills, MCP servers, session-start hook. `install.sh guard` installs the global command guard. Test: `test-install.sh`. |
 | `skills/` | One folder per skill. Static checks: `check-skills.sh`. |
 | `plugins/` | One folder per plugin, when this repo has any. Cursor loads the copy from `.agents/plugins/` when the project opens. |
