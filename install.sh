@@ -35,6 +35,13 @@ claude_hook() { # $1 = file, $2 = event, $3 = script, $4 = optional tool matcher
   merge "$1" "$CLAUDE_HOOK" --arg e "$2" --arg s "$rel/hooks/$3" --arg c "$(hookcmd "$3")" --arg m "${4:-}" --arg t "${5:-}"
 }
 
+# Session-start loaders. Each is its own hook entry: Claude Code swaps a hook string over 10,000 characters for a file path.
+LOADERS="load-structured-output.sh load-fable-playbook.sh load-working-rules.sh"
+claude_loaders() { # $1 = file
+  local l
+  for l in $LOADERS; do claude_hook "$1" SessionStart "$l"; done
+}
+
 servers() { jq -c '.mcpServers' "$here/mcp.json"; }
 
 link_or_merge_mcp() { # $1 = path that reads {"mcpServers":{...}}. Links when free, merges into a project-owned file.
@@ -63,7 +70,7 @@ claude() {
 
 claude_settings() { # Also read by Copilot CLI, and by VS Code with chat.useClaudeHooks.
   link_or_merge_mcp .mcp.json
-  claude_hook .claude/settings.json SessionStart load-structured-output.sh
+  claude_loaders .claude/settings.json
   # Jev: guard tool calls, screen tool output, advise /clear, /compact or a handoff. Passes everything without a Jev key.
   claude_hook .claude/settings.json PreToolUse jev.sh 'Bash|Write|Edit' 10
   claude_hook .claude/settings.json PostToolUse jev.sh 'Read|Bash|WebFetch' 10
@@ -72,9 +79,12 @@ claude_settings() { # Also read by Copilot CLI, and by VS Code with chat.useClau
 
 cursor() { # Skills: reads .agents/skills natively. Plugins: workspaceOpen loads .agents/plugins when that folder has any.
   link_or_merge_mcp .cursor/mcp.json
-  merge .cursor/hooks.json '.version //= 1
-    | .hooks.sessionStart = [(.hooks.sessionStart // [])[] | select((.command // "") | contains($s) | not)] + [{command: $c}]' \
-    --arg s "$rel/hooks/load-structured-output.sh" --arg c "$(hookcmd load-structured-output.sh cursor)"
+  local l
+  for l in $LOADERS; do
+    merge .cursor/hooks.json '.version //= 1
+      | .hooks.sessionStart = [(.hooks.sessionStart // [])[] | select((.command // "") | contains($s) | not)] + [{command: $c}]' \
+      --arg s "$rel/hooks/$l" --arg c "$(hookcmd "$l" cursor)"
+  done
   if [ -n "$(find "$here/plugins" -mindepth 1 -maxdepth 1 -type d -print -quit 2>/dev/null)" ]; then
     merge .cursor/hooks.json '.version //= 1
       | .hooks.workspaceOpen = [(.hooks.workspaceOpen // [])[] | select((.command // "") | contains($s) | not)] + [{command: $c}]' \
@@ -97,13 +107,13 @@ codex() { # Skills: reads .agents/skills natively. Config and hooks load only in
         else "command = \(.command | @json)\nargs = \((.args // []) | @json)" end' "$here/mcp.json"
     } >>"$f"
   done
-  claude_hook .codex/hooks.json SessionStart load-structured-output.sh
+  claude_loaders .codex/hooks.json
 }
 
 gemini() { # Skills: reads .agents/skills natively. Project hooks must be trusted again after a change.
   merge .gemini/settings.json '.mcpServers = ($s | map_values(if .url then {httpUrl: .url} else del(.type) end)) + (.mcpServers // {})' \
     --argjson s "$(servers)"
-  claude_hook .gemini/settings.json SessionStart load-structured-output.sh
+  claude_loaders .gemini/settings.json
 }
 
 copilot() { # Skills: reads .agents/skills natively. CLI reads .mcp.json and .claude/settings.json hooks.
@@ -117,7 +127,8 @@ opencode() { # Skills: reads .agents/skills natively. No shell hooks, so the ski
     | .mcp = ($s | map_values(if .url then {type: "remote", url: .url} else {type: "local", command: ([.command] + (.args // []))} end)) + (.mcp // {})
     | .instructions = ((.instructions // []) | . + ($i - .))' \
     --argjson s "$(servers)" \
-    --argjson i "$(jq -cn --arg r "$rel" '[$r + "/skills/structured-output/SKILL.md", $r + "/skills/structured-output/references/unslop-rules.md"]')"
+    --argjson i "$(jq -cn --arg r "$rel" '["structured-output/SKILL.md", "structured-output/references/unslop-rules.md",
+      "fable-playbook/SKILL.md", "working-rules/SKILL.md", "fable-playbook/references/mistakes.md"] | map($r + "/skills/" + .)')"
 }
 
 guard() {

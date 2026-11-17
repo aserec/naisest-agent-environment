@@ -35,17 +35,26 @@ check "own hook kept"                jq -e '[.hooks.SessionStart[].hooks[] | sel
 check "jev hooks with matcher and timeout" jq -e '[.hooks.PreToolUse, .hooks.PostToolUse, .hooks.UserPromptSubmit | [.[] | select(.hooks[0].command | contains("jev.sh")) | {matcher, t: .hooks[0].timeout}]] == [[{matcher: "Bash|Write|Edit", t: 10}], [{matcher: "Read|Bash|WebFetch", t: 10}], [{matcher: null, t: 10}]]' .claude/settings.json
 check "codex servers written once"   test "$(grep -c '^\[mcp_servers\.' .codex/config.toml)" -eq "$(jq '.mcpServers | length' .agents/mcp.json)"
 check "codex figma url"              grep -q '^url = "https://mcp.figma.com/mcp"' .codex/config.toml
-check "codex one loader"             jq -e '.hooks.SessionStart | length == 1' .codex/hooks.json
-check "cursor one loader"            jq -e '.version == 1 and (.hooks.sessionStart | length == 1) and (.hooks.workspaceOpen // [] | length == 0)' .cursor/hooks.json
-check "gemini http uses httpUrl"     jq -e '.mcpServers.figma.httpUrl and (.hooks.SessionStart | length == 1)' .gemini/settings.json
+check "codex three loaders"          jq -e '.hooks.SessionStart | length == 3' .codex/hooks.json
+check "cursor three loaders"         jq -e '.version == 1 and (.hooks.sessionStart | length == 3) and (.hooks.workspaceOpen // [] | length == 0)' .cursor/hooks.json
+check "gemini http uses httpUrl"     jq -e '.mcpServers.figma.httpUrl and (.hooks.SessionStart | length == 3)' .gemini/settings.json
 check "vscode servers key"           jq -e '.servers.figma.type == "http" and .servers.graft.type == "stdio"' .vscode/mcp.json
-check "opencode mcp and instructions" jq -e '.mcp.graft.command == ["graft","mcp"] and (.instructions | length == 2)' opencode.json
+check "opencode mcp and instructions" jq -e '.mcp.graft.command == ["graft","mcp"] and (.instructions | length == 5)' opencode.json
 
 # The committed commands must find the loader and print the shape each harness reads.
 cmd=$(jq -r '.hooks.SessionStart[].hooks[] | select(.command | contains("load-structured")) | .command' .claude/settings.json)
 check "claude loader output" sh -c "$cmd | jq -e '.hookSpecificOutput.additionalContext | contains(\"Structured output\")'"
 cmd=$(jq -r '.hooks.sessionStart[0].command' .cursor/hooks.json)
 check "cursor loader output" sh -c "cd /tmp && CURSOR_PROJECT_DIR='$TMP' sh -c '$cmd' | jq -e '.additional_context | length > 0'"
+# Each loader is one hook string. Claude Code swaps a string over 10,000 characters for a file path, and the skill then does not load.
+for l in structured-output fable-playbook working-rules; do
+  cmd=$(jq -r --arg l "load-$l.sh" '.hooks.SessionStart[].hooks[] | select(.command | contains($l)) | .command' .claude/settings.json)
+  check "claude loader under the cap: $l" sh -c "$cmd | jq -e '.hookSpecificOutput.additionalContext | length > 200 and length <= 10000'"
+done
+# cmd is the working-rules loader here. It also carries the playbook's table of mistakes.
+check "working-rules loader has rules, table and checklist" sh -c "$cmd | jq -e '.hookSpecificOutput.additionalContext | contains(\"## Rules\") and contains(\"# Mistakes to watch for\") and contains(\"## Checklist\")'"
+cmd=$(jq -r '.hooks.SessionStart[].hooks[] | select(.command | contains("load-fable-playbook")) | .command' .claude/settings.json)
+check "playbook loader keeps steps and checklist, drops frontmatter and examples" sh -c "$cmd | jq -e '.hookSpecificOutput.additionalContext | contains(\"### 9.\") and contains(\"## Checklist\") and (contains(\"## Examples\") or contains(\"name: fable-playbook\") | not)'"
 
 mkdir -p .agents/plugins/demo/.cursor-plugin
 echo '{}' >.agents/plugins/demo/.cursor-plugin/plugin.json
