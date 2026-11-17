@@ -2,7 +2,9 @@
 # Test harness for install.sh. Installs twice into a throwaway project that already has its own config.
 # Usage: ./test-install.sh
 src="$(cd "$(dirname "$0")" && pwd)"
-TMP=$(mktemp -d)
+# Stop when there is no temp folder: with an empty TMP the fixtures below would land in the repo that runs this test.
+# The template keeps the folder under TMPDIR, which a sandbox can write; a bare `mktemp -d` on macOS does not use it.
+TMP=$(mktemp -d "${TMPDIR:-/tmp}/agent-config-test.XXXXXX") || exit 1
 trap 'rm -rf "$TMP"' EXIT
 cd "$TMP" && git init -q
 mkdir .agents && cp -R "$src/skills" "$src/hooks" "$src/mcp.json" "$src/install.sh" .agents/

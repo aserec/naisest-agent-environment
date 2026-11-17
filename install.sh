@@ -23,7 +23,7 @@ merge() { # $1 = JSON file, $2 = jq filter, rest = jq args. Creates the file if 
   local f="$1" filter="$2" tmp; shift 2
   mkdir -p "$(dirname "$f")"
   [ -s "$f" ] || echo '{}' >"$f"
-  tmp=$(mktemp)
+  tmp=$(mktemp "$f.XXXXXX") # next to the file: a bare mktemp writes outside what a sandbox allows
   jq "$@" "$filter" "$f" >"$tmp" && mv "$tmp" "$f"
 }
 

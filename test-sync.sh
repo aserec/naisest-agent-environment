@@ -2,7 +2,8 @@
 # Test harness for sync.sh. Copies a tiny fixture clone into a throwaway project.
 # Usage: ./test-sync.sh
 repo="$(cd "$(dirname "$0")" && pwd)"
-TMP=$(mktemp -d)
+# Stop when there is no temp folder; the template keeps it under TMPDIR, which a sandbox can write.
+TMP=$(mktemp -d "${TMPDIR:-/tmp}/agent-config-test.XXXXXX") || exit 1
 trap 'rm -rf "$TMP"' EXIT
 src="$TMP/agent-config"
 proj="$TMP/project"
