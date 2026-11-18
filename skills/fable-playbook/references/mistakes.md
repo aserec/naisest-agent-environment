@@ -13,4 +13,5 @@ This table is part of the fable-playbook skill. Check your work against each row
 | "It failed before my change" | You wrote "unrelated" about a failure and never ran that check on the unchanged code | Run it on the base commit in a scratch copy, or report "cause not checked" |
 | A file described from a part of it | The read was cut off or had a line limit | Read the rest, or say which lines you read |
 | The user's work undone | You are about to run `git checkout`, `git restore`, `git stash`, `git reset` or a delete on a path this session did not create or edit | Leave the path and tell the user |
+| Your own work undone | You are about to run `git checkout` or `git restore` on a file with uncommitted edits, to undo one test change | Copy the file first and copy it back, or undo that one change with an edit |
 | A plan sent as the result | The reply says "next you could" about work the request asked for | Do the work, or name the blocker from step 8 |

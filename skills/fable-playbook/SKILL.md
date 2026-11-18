@@ -36,7 +36,9 @@ Why: an edit made before the callers are read fixes one path and breaks another.
 
 Put in scope what an ask names, plus what must change for that ask to hold: callers, tests of the changed behavior, and a doc line that states the old behavior. Everything else is out of scope: a rename, a reformat, a refactor, a new option, a fallback for a case that cannot happen, a file nobody asked for, a second bug found on the way. Keep each out-of-scope finding as one line for step 5 and the report, and leave that code as it is.
 
-Why: the user reviews every changed line and cannot tell an unasked change from a mistake. Done when every file you plan to touch maps to an ask.
+Inside the scope, reuse before you write. Look in this order: code already in the repo, the standard library, a platform feature, a dependency already installed. Add no dependency for what a few lines do, and no helper, layer or option with a single caller.
+
+Why: the user reviews every changed line and cannot tell an unasked change from a mistake, and code that repeats a helper a few files away is the most common extra line. Done when every file you plan to touch maps to an ask, and each new function has no match already in the repo.
 
 ### 4. Look it up, or ask once
 
@@ -48,7 +50,7 @@ Why: a question the repo could answer costs the user a round trip, and a wrong g
 
 Make no edit until the chat shows one plan block: the three facts from step 2, each out-of-scope finding from step 3, and the plan as 1 to 7 numbered steps. Each step is one line: one change, its proof command, and the output you expect. Put the steps in this order. First the unknown that could change the plan, such as a bug not yet reproduced or an API not yet called. Second the failing check, so you see it red before the fix. Third the change. Last what depends on the change, such as other callers and docs. Split a step that needs two proofs. Past 7 steps, group them into phases and plan the next phase only when the phase before has its proofs.
 
-Why: when one proof covers three changes, a red result does not say which change broke. Done when the chat shows the plan block, and each step names its proof and expected output.
+Why: when one proof covers three changes, a red result does not say which change broke. Done when the chat shows the plan block, each step names its proof and expected output, and a step that changes behavior has a check planned to run red before that change.
 
 ### 6. Run one step, then its proof
 
@@ -98,7 +100,7 @@ Load each skill when its line applies. This playbook adds no rules in these area
 
 ## Mistakes to watch for
 
-The table of 10 mistakes is in [references/mistakes.md](references/mistakes.md). Each row gives the mistake, how to notice it and what to do instead. The session-start hook `load-working-rules.sh` loads the table. If the table is not in your context, read that file before step 6.
+The table of mistakes is in [references/mistakes.md](references/mistakes.md). Each row gives the mistake, how to notice it and what to do instead. The session-start hook `load-working-rules.sh` loads the table. If the table is not in your context, read that file before step 6.
 
 Why a separate file: Claude Code swaps a hook string over 10,000 characters for a file path, and the steps with the table are longer than that.
 
