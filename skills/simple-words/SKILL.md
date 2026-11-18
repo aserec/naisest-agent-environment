@@ -3,7 +3,7 @@ name: simple-words
 description: Writes prose and code names in simple English for non-native readers. Use for every reply, doc, comment, and name, and to review naming in code.
 version: 1.0.0
 metadata:
-  author: Danel Ceresa <dceresa1988@gmail.com>
+  author: Danel Ceresa <noreply@example.com>
   version: 1.0.0
   tags:
     - writing

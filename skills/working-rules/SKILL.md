@@ -3,7 +3,7 @@ name: working-rules
 description: Applies the user's standing rules, each taken from a past correction. Use for every task, before the first tool call and before the final reply.
 version: 1.0.0
 metadata:
-  author: Danel Ceresa <dceresa1988@gmail.com>
+  author: Danel Ceresa <noreply@example.com>
   version: 1.0.0
   tags:
     - rules

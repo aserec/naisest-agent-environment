@@ -3,7 +3,7 @@ name: diff-commit
 description: Splits the uncommitted diff into several commits, one per change topic. Use when asked to commit the diff in multiple or grouped commits.
 version: 1.0.0
 metadata:
-  author: Danel Ceresa <dceresa1988@gmail.com>
+  author: Danel Ceresa <noreply@example.com>
   version: 1.0.0
   tags:
     - git

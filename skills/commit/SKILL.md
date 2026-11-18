@@ -3,7 +3,7 @@ name: commit
 description: Makes one commit with a chat-proposed or drafted message. Use when asked to commit or reuse that message. Not for message-only or multi-commit asks.
 version: 1.0.0
 metadata:
-  author: Danel Ceresa <dceresa1988@gmail.com>
+  author: Danel Ceresa <noreply@example.com>
   version: 1.0.0
   tags:
     - git
@@ -53,7 +53,7 @@ Skip this step when step 2 copied a message. Do not rewrite a copied message: th
    - `git status`
    - `git diff --staged`, which is the diff the message describes
    - `git log -15 --oneline`
-2. Read the Branch and commit conventions section of the repo engineering guide before writing the subject. In this repo that section is kivvo-git-workflow-summary.md under engineering-docs/05-development.
+2. Read the Branch and commit conventions section of the repo engineering guide before writing the subject. In this repo that section is the team's git workflow doc under engineering-docs/05-development.
 3. Write the draft in a fenced block. Apply the conventions:
    - Subject is `type(scope): imperative summary`, at most 72 characters, with no trailing period.
    - Types are `feat`, `fix`, `chore`, `docs`, `test`, `refactor`. Scope is one or more of `web`, `ui`, `auth`, `http`, `forms`, `i18n`, `observability`.

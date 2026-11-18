@@ -4,7 +4,7 @@ description: Writes a two-part handout another team's agent can apply and its pe
 disable-model-invocation: true
 version: 1.0.0
 metadata:
-  author: Danel Ceresa <dceresa1988@gmail.com>
+  author: Danel Ceresa <noreply@example.com>
   version: 1.0.0
   tags:
     - handoff

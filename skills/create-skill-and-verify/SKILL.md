@@ -3,7 +3,7 @@ name: create-skill-and-verify
 description: Write a portable agent skill with a trigger description and steps an agent can run. Use when creating, editing, or validating a skill.
 version: 1.0.0
 metadata:
-  author: Danel Ceresa <dceresa1988@gmail.com>
+  author: Danel Ceresa <noreply@example.com>
   version: 1.0.0
   tags:
     - skills

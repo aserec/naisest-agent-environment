@@ -3,7 +3,7 @@ name: useful-tests
 description: Proves each test fails when one caller-visible behavior breaks. Use for every code change and every task that writes, edits, or reviews tests.
 version: 1.0.0
 metadata:
-  author: Danel Ceresa <dceresa1988@gmail.com>
+  author: Danel Ceresa <noreply@example.com>
   version: 1.0.0
   tags:
     - testing

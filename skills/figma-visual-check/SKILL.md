@@ -5,7 +5,7 @@ disable-model-invocation: true
 version: 1.0.0
 allowed-tools: Bash, Read, mcp__playwright__browser_navigate, mcp__playwright__browser_resize, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_hover
 metadata:
-  author: Danel Ceresa <danel@kivvo.ai>
+  author: Danel Ceresa <noreply@example.com>
   version: 1.0.0
   tags: [figma, visual-regression, playwright, ui]
 ---

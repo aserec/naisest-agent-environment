@@ -3,7 +3,7 @@ name: fable-playbook
 description: Plans a task, proves each step and reports every claim with its proof. Use for every task, before the first tool call and before the final reply.
 version: 1.0.0
 metadata:
-  author: Danel Ceresa <dceresa1988@gmail.com>
+  author: Danel Ceresa <noreply@example.com>
   version: 1.0.0
   tags:
     - planning

@@ -3,7 +3,7 @@ name: structured-output
 description: Lay out each chat reply under fixed rendered headings and cut AI tells. Use when answering the user or summarizing completed work.
 version: 3.1.0
 metadata:
-  author: Danel Ceresa <dceresa1988@gmail.com>
+  author: Danel Ceresa <noreply@example.com>
   version: 3.1.0
   tags:
     - writing

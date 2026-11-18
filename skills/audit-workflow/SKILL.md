@@ -4,7 +4,7 @@ description: Runs a fixed React feature through the agent workflow and scores co
 version: 1.0.0
 allowed-tools: Bash Read Write
 metadata:
-  author: Danel Ceresa <dceresa1988@gmail.com>
+  author: Danel Ceresa <noreply@example.com>
   version: 1.0.0
   tags:
     - evaluation

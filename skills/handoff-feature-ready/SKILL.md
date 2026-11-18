@@ -4,7 +4,7 @@ description: Writes a frontend handoff for a finished backend feature on a branc
 disable-model-invocation: true
 version: 1.0.0
 metadata:
-  author: Danel Ceresa <dceresa1988@gmail.com>
+  author: Danel Ceresa <noreply@example.com>
   version: 1.0.0
   tags:
     - handoff
